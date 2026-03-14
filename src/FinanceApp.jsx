@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { db } from "./firebaseConfig";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import html2canvas from "html2canvas";
@@ -40,6 +40,29 @@ const isCC = (name) => name && name.toUpperCase().includes("CC");
 
 export default function FinanceApp() {
   const [budgetMonth, setBudgetMonth] = useState(currentMonthVal);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setDeferredPrompt(null);
+    }
+  };
 
   // Initial State Models
   const [accounts, setAccounts] = useState([
@@ -133,6 +156,20 @@ export default function FinanceApp() {
           boxShadow: "0 4px 12px rgba(0,0,0,0.05)", border: "1px solid #e2e8f0"
         }}>
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: "16px", position: "relative" }}>
+            {deferredPrompt && (
+              <button 
+                className="print-hide"
+                onClick={handleInstall}
+                title="Install App"
+                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#00247D", position: "absolute", left: 0 }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </button>
+            )}
             <h1 className="print-hide" style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "#000", textAlign: "center" }}>
               Our TuckAway
             </h1>

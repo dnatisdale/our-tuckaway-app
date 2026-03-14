@@ -43,7 +43,7 @@ export default function FinanceApp() {
 
   // Initial State Models
   const [accounts, setAccounts] = useState([
-    { id: 1, bank: "Mt.McKinley ..2586,..9744", bal: "", isHidden: false },
+    { id: 1, bank: "Mt.McKinley", bal: "", isHidden: false },
     { id: 2, bank: "Mt.MtKin CC.", bal: "", cycle: "", due: "", isHidden: false },
     { id: 3, bank: "Chase Savings", bal: "", isHidden: false },
     { id: 4, bank: "Chase CC.", bal: "", cycle: "", due: "", isHidden: false },
@@ -306,25 +306,27 @@ export default function FinanceApp() {
               {!cc.isHidden && (
                 <div style={{ display: "flex", gap: "10px", paddingLeft: "10px", paddingRight: "10px" }}>
                   {/* Cycle Date */}
-                  <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "6px 10px", border: "1px solid #000" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                         <span style={{ fontSize: "11px", color: "#000", fontWeight: "normal", textTransform: "uppercase" }}>Cycle</span>
-                         <input type="number" min="1" max="31" placeholder="DD" value={cc.cycle || ""} onChange={e => updateAccount(cc.id, "cycle", e.target.value)} style={{ width: "35px", background: "#f8fafc", border: "1px solid #000", borderRadius: "4px", padding: "2px", color: "#000", fontSize: "13px", fontWeight: "normal", outline: "none", textAlign: "center" }} />
-                      </div>
-                      <DaysIndicator days={calculateDaysUntil(cc.cycle)} type="cycle" />
-                    </div>
+                  <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "8px", border: "1px solid #000", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                     <span style={{ fontSize: "10px", color: "#64748b", fontWeight: "700", textTransform: "uppercase" }}>Cycle</span>
+                     <input 
+                       type="number" min="1" max="31" placeholder="DD" 
+                       value={cc.cycle || ""} 
+                       onChange={e => updateAccount(cc.id, "cycle", e.target.value)} 
+                       style={{ width: "45px", background: "#f8fafc", border: "1.5px solid #000", borderRadius: "6px", padding: "4px", color: "#000", fontSize: "14px", fontWeight: "800", outline: "none", textAlign: "center" }} 
+                     />
+                     <DaysIndicator days={calculateDaysUntil(cc.cycle)} type="cycle" />
                   </div>
 
                   {/* Due Date */}
-                  <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "6px 10px", border: "1px solid #000" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                         <span style={{ fontSize: "11px", color: "#000", fontWeight: "normal", textTransform: "uppercase" }}>Due</span>
-                         <input type="number" min="1" max="31" placeholder="DD" value={cc.due || ""} onChange={e => updateAccount(cc.id, "due", e.target.value)} style={{ width: "35px", background: "#f8fafc", border: "1px solid #000", borderRadius: "4px", padding: "2px", color: "#000", fontSize: "13px", fontWeight: "normal", outline: "none", textAlign: "center" }} />
-                      </div>
-                      <DaysIndicator days={calculateDaysUntil(cc.due)} type="due" />
-                    </div>
+                  <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "8px", border: "1px solid #000", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                     <span style={{ fontSize: "10px", color: "#64748b", fontWeight: "700", textTransform: "uppercase" }}>Due</span>
+                     <input 
+                       type="number" min="1" max="31" placeholder="DD" 
+                       value={cc.due || ""} 
+                       onChange={e => updateAccount(cc.id, "due", e.target.value)} 
+                       style={{ width: "45px", background: "#f8fafc", border: "1.5px solid #000", borderRadius: "6px", padding: "4px", color: "#000", fontSize: "14px", fontWeight: "800", outline: "none", textAlign: "center" }} 
+                     />
+                     <DaysIndicator days={calculateDaysUntil(cc.due)} type="due" />
                   </div>
                 </div>
               )}

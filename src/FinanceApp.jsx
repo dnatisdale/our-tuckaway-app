@@ -87,66 +87,8 @@ export default function FinanceApp() {
 
   const appRef = useRef(null);
 
-  const handleSharePDF = async () => {
-    if (!appRef.current) return;
-    
-    // Show report-only elements and hide UI elements
-    const elementsToHide = document.querySelectorAll(".print-hide");
-    const reportElements = document.querySelectorAll(".report-only");
-    
-    elementsToHide.forEach(el => el.style.display = "none");
-    reportElements.forEach(el => el.style.display = "block");
-
-    try {
-      // 1. Snapshot the HTML Element
-      const canvas = await html2canvas(appRef.current, { 
-        scale: 2, 
-        useCORS: true, 
-        backgroundColor: "#ffffff",
-        onclone: (clonedDoc) => {
-          // Remove shadows and borders for the "Report" look in the PDF
-          const cards = clonedDoc.querySelectorAll('[style*="boxShadow"]');
-          cards.forEach(c => {
-            c.style.boxShadow = "none";
-            c.style.border = "1px solid #eee";
-          });
-        }
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-
-      // 2. Create the PDF Document
-      // A4 size by default, dimensions are 210x297mm
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-
-      // Build specific Date Label (e.g., 03_MAR26)
-      const dateObj = new Date(budgetMonth + "-01T00:00:00");
-      const monthNum = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-      const monthName = months[dateObj.getMonth()];
-      const yearShort = String(dateObj.getFullYear()).slice(-2);
-      
-      // Build Today Label (e.g., 14-03-2026)
-      const td = new Date();
-      const tdDay = String(td.getDate()).padStart(2, '0');
-      const tdMonth = String(td.getMonth() + 1).padStart(2, '0');
-      const tdYear = td.getFullYear();
-
-      // 3. Prompt user download: TuckAway_03_MAR26_On_14-03-2026.pdf
-      const fileName = `TuckAway_${monthNum}_${monthName}${yearShort}_On_${tdDay}-${tdMonth}-${tdYear}.pdf`;
-      pdf.save(fileName);
-
-    } catch (e) {
-      alert("Error generating PDF: " + e.message);
-    } finally {
-      // Restore UI
-      elementsToHide.forEach(el => el.style.display = "");
-      reportElements.forEach(el => el.style.display = "none");
-    }
+  const handleSharePDF = () => {
+    window.print();
   };
 
   const currentMonthDisplay = new Date(budgetMonth + "-01T00:00:00").toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -160,6 +102,17 @@ export default function FinanceApp() {
         input[type="month"]::-webkit-calendar-picker-indicator {
           opacity: 1;
           background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" viewBox="0 0 24 24"><path fill="%23ED1C24" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>');
+        }
+
+        @media print {
+          .print-hide { display: none !important; }
+          .report-only { display: block !important; }
+          body, html, #root { background: #fff !important; margin: 0; padding: 0; }
+          div[style*="maxWidth"] { max-width: 100% !important; margin: 0 !important; width: 100% !important; }
+          div[style*="boxShadow"] { box-shadow: none !important; border: 1px solid #eee !important; margin-bottom: 20px !important; break-inside: avoid; }
+          h1, h2, h3, span, div { color: #000 !important; }
+          input { border: 1px solid #ccc !important; }
+          @page { size: auto; margin: 15mm; }
         }
       `}</style>
       <div style={{ maxWidth: "500px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>

@@ -43,9 +43,9 @@ export default function FinanceApp() {
 
   // Initial State Models
   const [accounts, setAccounts] = useState([
-    { id: 1, bank: "Mt.MtKin ..2586,..9744", bal: "", isHidden: false },
+    { id: 1, bank: "Mt.McKinley ..2586,..9744", bal: "", isHidden: false },
     { id: 2, bank: "Mt.MtKin CC.", bal: "", cycle: "", due: "", isHidden: false },
-    { id: 3, bank: "Chase Savings ..1213", bal: "", isHidden: false },
+    { id: 3, bank: "Chase Savings", bal: "", isHidden: false },
     { id: 4, bank: "Chase CC.", bal: "", cycle: "", due: "", isHidden: false },
     { id: 5, bank: "SCB Dan's CC.", bal: "", cycle: "25", due: "5", isHidden: false },
     { id: 6, bank: "SCB Dan's ThaiVisa ..1856", bal: "", isHidden: false },
@@ -90,16 +90,27 @@ export default function FinanceApp() {
   const handleSharePDF = async () => {
     if (!appRef.current) return;
     
-    // Hide UI elements we don't want printed
+    // Show report-only elements and hide UI elements
     const elementsToHide = document.querySelectorAll(".print-hide");
+    const reportElements = document.querySelectorAll(".report-only");
+    
     elementsToHide.forEach(el => el.style.display = "none");
+    reportElements.forEach(el => el.style.display = "block");
 
     try {
       // 1. Snapshot the HTML Element
       const canvas = await html2canvas(appRef.current, { 
-        scale: 2, // Higher density
+        scale: 2, 
         useCORS: true, 
-        backgroundColor: "#f8fafc"
+        backgroundColor: "#ffffff",
+        onclone: (clonedDoc) => {
+          // Remove shadows and borders for the "Report" look in the PDF
+          const cards = clonedDoc.querySelectorAll('[style*="boxShadow"]');
+          cards.forEach(c => {
+            c.style.boxShadow = "none";
+            c.style.border = "1px solid #eee";
+          });
+        }
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -132,10 +143,13 @@ export default function FinanceApp() {
     } catch (e) {
       alert("Error generating PDF: " + e.message);
     } finally {
-      // Show UI elements again
+      // Restore UI
       elementsToHide.forEach(el => el.style.display = "");
+      reportElements.forEach(el => el.style.display = "none");
     }
   };
+
+  const currentMonthDisplay = new Date(budgetMonth + "-01T00:00:00").toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   return (
     <div ref={appRef} style={{
@@ -150,13 +164,23 @@ export default function FinanceApp() {
       `}</style>
       <div style={{ maxWidth: "500px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
 
+        {/* --- REPORT HEADER (Hidden in PWA, Shown in PDF) --- */}
+        <div className="report-only" style={{ display: "none", textAlign: "center", marginBottom: "20px", borderBottom: "2px solid #000", paddingBottom: "10px" }}>
+          <h1 style={{ margin: "0", fontSize: "28px", fontWeight: "900", color: "#000", textTransform: "uppercase" }}>
+            Budget Report
+          </h1>
+          <div style={{ fontSize: "16px", fontWeight: "700", color: "#000" }}>
+            Generated on {new Date().toLocaleDateString("en-US")}
+          </div>
+        </div>
+
         {/* --- HEADER --- */}
         <div style={{
           background: "#ffffff", borderRadius: "16px", padding: "20px",
           boxShadow: "0 4px 12px rgba(0,0,0,0.05)", border: "1px solid #e2e8f0"
         }}>
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: "16px", position: "relative" }}>
-            <h1 style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "#000", textAlign: "center" }}>
+            <h1 className="print-hide" style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "#000", textAlign: "center" }}>
               Our TuckAway
             </h1>
             <button 
@@ -173,11 +197,23 @@ export default function FinanceApp() {
             </button>
           </div>
           
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
+            {/* Centered Decorative Month Display */}
+            <div style={{ 
+              fontSize: "18px", fontWeight: "800", color: "#ED1C24", textAlign: "center", 
+              pointerEvents: "none", zIndex: 1
+            }}>
+              {currentMonthDisplay}
+            </div>
+            
+            {/* Invisible Input Layer for Interaction */}
             <input 
               type="month" value={budgetMonth} onChange={(e) => setBudgetMonth(e.target.value)}
-              style={{ padding: "12px", borderRadius: "10px", border: "1.5px solid #000", background: "#fff", color: "#ED1C24", fontSize: "15px", fontWeight: "700", outline: "none", boxSizing: "border-box" }}
+              style={{ 
+                position: "absolute", top: 0, opacity: 0, width: "160px", height: "100%", cursor: "pointer", zIndex: 2
+              }}
             />
+            
             <label style={{ fontSize: "10px", color: "#64748b", fontWeight: "700", textTransform: "uppercase", marginTop: "6px" }}>
               (TAP TO SELECT)
             </label>

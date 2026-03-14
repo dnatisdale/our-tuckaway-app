@@ -43,8 +43,8 @@ export default function FinanceApp() {
 
   // Initial State Models
   const [accounts, setAccounts] = useState([
-    { id: 1, bank: "Mt.McKin ..2586|9744", bal: "", isHidden: false },
-    { id: 2, bank: "Mt.McKin CC.", bal: "", cycle: "", due: "", isHidden: false },
+    { id: 1, bank: "Mt.MtKin ..2586,..9744", bal: "", isHidden: false },
+    { id: 2, bank: "Mt.MtKin CC.", bal: "", cycle: "", due: "", isHidden: false },
     { id: 3, bank: "Chase Savings ..1213", bal: "", isHidden: false },
     { id: 4, bank: "Chase CC.", bal: "", cycle: "", due: "", isHidden: false },
     { id: 5, bank: "SCB Dan's CC.", bal: "", cycle: "25", due: "5", isHidden: false },
@@ -112,11 +112,22 @@ export default function FinanceApp() {
 
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
 
-      // Clean the date label up
-      const niceLabel = new Date(budgetMonth + "-01T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" }).replace(" ", "");
+      // Build specific Date Label (e.g., 03_MAR26)
+      const dateObj = new Date(budgetMonth + "-01T00:00:00");
+      const monthNum = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      const monthName = months[dateObj.getMonth()];
+      const yearShort = String(dateObj.getFullYear()).slice(-2);
+      
+      // Build Today Label (e.g., 14-03-2026)
+      const td = new Date();
+      const tdDay = String(td.getDate()).padStart(2, '0');
+      const tdMonth = String(td.getMonth() + 1).padStart(2, '0');
+      const tdYear = td.getFullYear();
 
-      // 3. Prompt user download
-      pdf.save(`TuckAway_${niceLabel}.pdf`);
+      // 3. Prompt user download: TuckAway_03_MAR26_On_14-03-2026.pdf
+      const fileName = `TuckAway_${monthNum}_${monthName}${yearShort}_On_${tdDay}-${tdMonth}-${tdYear}.pdf`;
+      pdf.save(fileName);
 
     } catch (e) {
       alert("Error generating PDF: " + e.message);
@@ -144,20 +155,20 @@ export default function FinanceApp() {
           background: "#ffffff", borderRadius: "16px", padding: "20px",
           boxShadow: "0 4px 12px rgba(0,0,0,0.05)", border: "1px solid #e2e8f0"
         }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <h1 style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "#000" }}>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: "16px", position: "relative" }}>
+            <h1 style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "#000", textAlign: "center" }}>
               Our TuckAway
             </h1>
             <button 
               className="print-hide"
               onClick={handleSharePDF}
               title="Export to PDF"
-              style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#000" }}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "#000", position: "absolute", right: 0 }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <text x="12" y="16" textAnchor="middle" fill="currentColor" stroke="none" fontSize="7px" fontWeight="bold" fontFamily="sans-serif">PDF</text>
               </svg>
             </button>
           </div>

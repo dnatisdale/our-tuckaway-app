@@ -111,7 +111,31 @@ export default function FinanceApp() {
   const appRef = useRef(null);
 
   const handleSharePDF = () => {
+    // 1. Calculate the dynamic filename: TuckAway_MM_MONYY_On_DD-MM-YYYY
+    const dateObj = new Date(budgetMonth + "-01T00:00:00");
+    const monthNum = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const monthName = months[dateObj.getMonth()];
+    const yearShort = String(dateObj.getFullYear()).slice(-2);
+    
+    const td = new Date();
+    const tdDay = String(td.getDate()).padStart(2, '0');
+    const tdMonth = String(td.getMonth() + 1).padStart(2, '0');
+    const tdYear = td.getFullYear();
+
+    const fileName = `TuckAway_${monthNum}_${monthName}${yearShort}_On_${tdDay}-${tdMonth}-${tdYear}`;
+    
+    // 2. Temporarily change doc title (browser uses this as the default filename)
+    const originalTitle = document.title;
+    document.title = fileName;
+    
+    // 3. Trigger print
     window.print();
+    
+    // 4. Restore original title after a short delay so the print dialog captures the new one
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
   };
 
   const currentMonthDisplay = new Date(budgetMonth + "-01T00:00:00").toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -135,27 +159,28 @@ export default function FinanceApp() {
           div[style*="boxShadow"] { box-shadow: none !important; border: 1px solid #eee !important; margin-bottom: 20px !important; break-inside: avoid; }
           h1, h2, h3, span, div { color: #000 !important; }
           input { border: 1px solid #ccc !important; }
-          @page { size: auto; margin: 15mm; }
+          @page { size: auto; margin: 0.25in; }
         }
       `}</style>
-      <div style={{ maxWidth: "500px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ maxWidth: "500px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "10px" }}>
 
         {/* --- REPORT HEADER (Hidden in PWA, Shown in PDF) --- */}
-        <div className="report-only" style={{ display: "none", textAlign: "center", marginBottom: "20px", borderBottom: "2px solid #000", paddingBottom: "10px" }}>
+        <div className="report-only" style={{ display: "none", textAlign: "center", marginBottom: "10px", borderBottom: "2px solid #000", paddingBottom: "10px" }}>
           <h1 style={{ margin: "0", fontSize: "28px", fontWeight: "900", color: "#000", textTransform: "uppercase" }}>
-            Budget Report
+            Our TuckAway {currentMonthDisplay}
           </h1>
           <div style={{ fontSize: "16px", fontWeight: "700", color: "#000" }}>
-            Generated on {new Date().toLocaleDateString("en-US")}
+            Generated on {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
           </div>
         </div>
 
         {/* --- HEADER --- */}
-        <div style={{
-          background: "#ffffff", borderRadius: "16px", padding: "20px",
+        <div className="print-hide" style={{
+          background: "#ffffff", borderRadius: "16px", padding: "12px",
           boxShadow: "0 4px 12px rgba(0,0,0,0.05)", border: "1px solid #e2e8f0"
         }}>
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: "16px", position: "relative" }}>
+          {/* --- MAIN PWA HEADER --- */}
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: "4px", position: "relative" }}>
             {deferredPrompt && (
               <button 
                 className="print-hide"
@@ -170,9 +195,21 @@ export default function FinanceApp() {
                 </svg>
               </button>
             )}
-            <h1 className="print-hide" style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "#000", textAlign: "center" }}>
-              Our TuckAway
-            </h1>
+
+            {/* Combined Clickable Title & Month */}
+            <div style={{ position: "relative" }} className="print-hide">
+              <h1 style={{ margin: 0, fontSize: "20px", fontWeight: "800", color: "#000", textAlign: "center", lineHeight: "1.2" }}>
+                Our TuckAway <br/>
+                <span style={{ color: "#ED1C24", fontSize: "18px" }}>{currentMonthDisplay}</span>
+              </h1>
+              <input 
+                type="month" value={budgetMonth} onChange={(e) => setBudgetMonth(e.target.value)}
+                style={{ 
+                  position: "absolute", top: 0, left: 0, opacity: 0, width: "100%", height: "100%", cursor: "pointer", zIndex: 10
+                }}
+              />
+            </div>
+
             <button 
               className="print-hide"
               onClick={handleSharePDF}
@@ -187,24 +224,8 @@ export default function FinanceApp() {
             </button>
           </div>
           
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
-            {/* Centered Decorative Month Display */}
-            <div style={{ 
-              fontSize: "18px", fontWeight: "800", color: "#ED1C24", textAlign: "center", 
-              pointerEvents: "none", zIndex: 1
-            }}>
-              {currentMonthDisplay}
-            </div>
-            
-            {/* Invisible Input Layer for Interaction */}
-            <input 
-              type="month" value={budgetMonth} onChange={(e) => setBudgetMonth(e.target.value)}
-              style={{ 
-                position: "absolute", top: 0, opacity: 0, width: "160px", height: "100%", cursor: "pointer", zIndex: 2
-              }}
-            />
-            
-            <label style={{ fontSize: "10px", color: "#64748b", fontWeight: "700", textTransform: "uppercase", marginTop: "6px" }}>
+          <div className="print-hide" style={{ textAlign: "center" }}>
+            <label style={{ fontSize: "10px", color: "#64748b", fontWeight: "700", textTransform: "uppercase" }}>
               (TAP TO SELECT)
             </label>
           </div>
@@ -216,10 +237,10 @@ export default function FinanceApp() {
           
           {savingsAccounts.map((acc, i) => (
              <React.Fragment key={acc.id}>
-                {i > 0 && <div style={{ height: "1px", background: "#e2e8f0", margin: acc.isHidden ? "6px 0" : "14px 0" }}></div>}
+
                 
                 {/* No Cycle/Due inputs for Savings */}
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: acc.isHidden ? "2px" : "0" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: acc.isHidden ? "2px" : "8px" }}>
                   <div style={{ flex: 1.2, display: "flex", alignItems: "center", gap: "8px" }}>
                      <button className="print-hide" onClick={() => updateAccount(acc.id, "isHidden", !acc.isHidden)} style={{ 
                        width: "18px", height: "18px", borderRadius: "50%", padding: 0, 
@@ -235,7 +256,7 @@ export default function FinanceApp() {
                        color: acc.isHidden ? "#94a3b8" : "#000", 
                        fontSize: acc.isHidden ? "13px" : "14px", 
                        fontWeight: "normal", 
-                       padding: acc.isHidden ? "2px 0" : "10px 12px", 
+                       padding: acc.isHidden ? "2px 0" : "5px 8px", 
                        boxSizing: "border-box", display: "flex", alignItems: "center" 
                      }}>
                        {acc.bank}
@@ -251,7 +272,7 @@ export default function FinanceApp() {
           ))}
           
           
-           <div style={{ marginTop: "16px", padding: "12px", background: "#f8fafc", borderTop: "2px solid #000", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+           <div style={{ marginTop: "16px", padding: "12px", background: "#f8fafc", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
              <span style={{ fontWeight: "800", color: "#000", fontSize: "14px", textTransform: "uppercase" }}>Savings Total:</span>
              <span style={{ fontWeight: "900", color: "#000", fontSize: "20px" }}>{fmtCur(totalCashUSD)}</span>
           </div>
@@ -263,84 +284,146 @@ export default function FinanceApp() {
 
           {creditCards.map((cc, i) => (
             <React.Fragment key={cc.id}>
-              {i > 0 && <div style={{ height: "1px", background: "#e2e8f0", margin: cc.isHidden ? "6px 0" : "14px 0" }}></div>}
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: cc.isHidden ? "2px" : "12px" }}>
-                 <div style={{ flex: 1.2, display: "flex", alignItems: "center", gap: "8px" }}>
-                    <button className="print-hide" onClick={() => updateAccount(cc.id, "isHidden", !cc.isHidden)} style={{ 
-                      width: "18px", height: "18px", borderRadius: "50%", padding: 0, 
-                      background: cc.isHidden ? "#ED1C24" : "#00247D", 
-                      border: "2px solid #000", cursor: "pointer", flexShrink: 0,
-                      boxShadow: "inset 0 0 0 2px #fff"
-                    }} aria-label="Toggle Visibility" />
-                    <div style={{ 
-                      width: "100%", 
-                      background: cc.isHidden ? "transparent" : "#fff", 
-                      borderRadius: "8px", 
-                      border: cc.isHidden ? "none" : "1.5px solid #000", 
-                      color: cc.isHidden ? "#94a3b8" : "#000", 
-                      fontSize: cc.isHidden ? "13px" : "14px", 
-                      fontWeight: "normal", 
-                      padding: cc.isHidden ? "2px 0" : "10px 12px", 
-                      boxSizing: "border-box", display: "flex", alignItems: "center" 
-                    }}>
-                      {cc.bank}
+
+              
+              <div style={{ display: "flex", gap: "10px", alignItems: cc.isHidden ? "center" : "flex-start", marginBottom: cc.isHidden ? "2px" : "12px" }}>
+                {/* Toggle Button */}
+                <button 
+                  className="print-hide" 
+                  onClick={() => updateAccount(cc.id, "isHidden", !cc.isHidden)}
+                  style={{ 
+                    marginTop: cc.isHidden ? "0" : "12px",
+                    width: "18px", height: "18px", borderRadius: "50%", padding: 0, 
+                    background: cc.isHidden ? "#ED1C24" : "#00247D", 
+                    border: "2px solid #000", cursor: "pointer", flexShrink: 0,
+                    boxShadow: "inset 0 0 0 2px #fff"
+                  }} 
+                  aria-label="Toggle Visibility"
+                />
+
+                {cc.isHidden ? (
+                  <div style={{ 
+                    color: "#94a3b8", fontSize: "14px", padding: "2px 0"
+                  }}>
+                    {cc.bank}
+                  </div>
+                ) : (
+                  <div style={{ 
+                    flex: 1, 
+                    border: "2px solid #000", 
+                    borderRadius: "12px", 
+                    overflow: "hidden",
+                    background: "#fff",
+                    display: "flex"
+                  }}>
+                    {/* Left Column: Name & Cycle */}
+                    <div style={{ flex: 1.2, display: "flex", flexDirection: "column", borderRight: "none" }}>
+                      <div style={{ 
+                        flex: 1,
+                        padding: "8px 10px",
+                        display: "flex",
+                        alignItems: "center",
+                        fontSize: "14px",
+                        fontWeight: "700"
+                      }}>
+                        {cc.bank}
+                      </div>
+                      
+                      <div style={{ 
+                        padding: "4px 10px",
+                        background: "#f8fafc",
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: "6px",
+                        flexWrap: "nowrap"
+                      }}>
+                        <span style={{ fontSize: "9px", color: "#64748b", fontWeight: "700", textTransform: "uppercase", whiteSpace: "nowrap" }}>Cycle</span>
+                        <input 
+                          type="text" inputMode="numeric" placeholder="DD" 
+                          value={cc.cycle || ""} 
+                          onChange={e => updateAccount(cc.id, "cycle", e.target.value.replace(/\D/g,''))} 
+                          style={{ 
+                            width: "35px", background: "#fff", border: "1px solid #000", borderRadius: "4px", 
+                            padding: "0", margin: "0", color: "#000", fontSize: "12px", fontWeight: "800", textAlign: "center", outline: "none", 
+                            lineHeight: "20px", height: "20px", boxSizing: "border-box"
+                          }} 
+                        />
+                        <div style={{ flexShrink: 0 }}>
+                          <DaysIndicator days={calculateDaysUntil(cc.cycle)} type="cycle" />
+                        </div>
+                      </div>
                     </div>
-                 </div>
-                 {!cc.isHidden && (
-                   <div style={{ flex: 0.8 }}>
-                      <CommaInput value={cc.bal} onChange={(val) => updateAccount(cc.id, "bal", val)} isNegative prefix="$" text="#000" bg="#fff" border="#000" />
-                   </div>
-                 )}
+
+                    {/* Right Column: Amount & Due */}
+                    <div style={{ flex: 0.8, display: "flex", flexDirection: "column" }}>
+                      <div style={{ flex: 1 }}>
+                        <CommaInput 
+                          value={cc.bal} 
+                          onChange={(val) => updateAccount(cc.id, "bal", val)} 
+                          isNegative 
+                          prefix="$" 
+                          text="#000" 
+                          bg="#fff" 
+                          border="none" 
+                        />
+                      </div>
+
+                      <div style={{ 
+                        padding: "4px 10px",
+                        background: "#f8fafc",
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: "6px",
+                        flexWrap: "nowrap"
+                      }}>
+                        <span style={{ fontSize: "9px", color: "#64748b", fontWeight: "700", textTransform: "uppercase", whiteSpace: "nowrap" }}>Due</span>
+                        <input 
+                          type="text" inputMode="numeric" placeholder="DD" 
+                          value={cc.due || ""} 
+                          onChange={e => updateAccount(cc.id, "due", e.target.value.replace(/\D/g,''))} 
+                          style={{ 
+                            width: "35px", background: "#fff", border: "1px solid #000", borderRadius: "4px", 
+                            padding: "0", margin: "0", color: "#000", fontSize: "12px", fontWeight: "800", textAlign: "center", outline: "none", 
+                            lineHeight: "20px", height: "20px", boxSizing: "border-box"
+                          }} 
+                        />
+                        <div style={{ flexShrink: 0 }}>
+                          <DaysIndicator days={calculateDaysUntil(cc.due)} type="due" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {!cc.isHidden && (
-                <div style={{ display: "flex", gap: "10px", paddingLeft: "10px", paddingRight: "10px" }}>
-                  {/* Cycle Date */}
-                  <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "8px", border: "1px solid #000", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                     <span style={{ fontSize: "10px", color: "#64748b", fontWeight: "700", textTransform: "uppercase" }}>Cycle</span>
-                     <input 
-                       type="number" min="1" max="31" placeholder="DD" 
-                       value={cc.cycle || ""} 
-                       onChange={e => updateAccount(cc.id, "cycle", e.target.value)} 
-                       style={{ width: "45px", background: "#f8fafc", border: "1.5px solid #000", borderRadius: "6px", padding: "4px", color: "#000", fontSize: "14px", fontWeight: "800", outline: "none", textAlign: "center" }} 
-                     />
-                     <DaysIndicator days={calculateDaysUntil(cc.cycle)} type="cycle" />
-                  </div>
-
-                  {/* Due Date */}
-                  <div style={{ flex: 1, background: "#fff", borderRadius: "8px", padding: "8px", border: "1px solid #000", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                     <span style={{ fontSize: "10px", color: "#64748b", fontWeight: "700", textTransform: "uppercase" }}>Due</span>
-                     <input 
-                       type="number" min="1" max="31" placeholder="DD" 
-                       value={cc.due || ""} 
-                       onChange={e => updateAccount(cc.id, "due", e.target.value)} 
-                       style={{ width: "45px", background: "#f8fafc", border: "1.5px solid #000", borderRadius: "6px", padding: "4px", color: "#000", fontSize: "14px", fontWeight: "800", outline: "none", textAlign: "center" }} 
-                     />
-                     <DaysIndicator days={calculateDaysUntil(cc.due)} type="due" />
-                  </div>
-                </div>
-              )}
             </React.Fragment>
           ))}
           
           
-          <div style={{ marginTop: "16px", padding: "12px", background: "#f8fafc", borderTop: "2px solid #000", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ marginTop: "16px", padding: "12px", background: "#f8fafc", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
              <span style={{ fontWeight: "800", color: "#000", fontSize: "14px", textTransform: "uppercase" }}>Total CC Due:</span>
              <span style={{ fontWeight: "900", color: "#000", fontSize: "20px" }}>{fmtCurNeg(totalCCUSD)}</span>
           </div>
         </Section>
 
 
-        {/* --- ROBINHOOD TRANSFER --- */}
-        <div style={{ background: "#000", borderRadius: "16px", padding: "26px 20px", boxShadow: "0 10px 25px rgba(0,0,0,0.2)" }}>
-          <div style={{ fontSize: "12px", fontWeight: "800", color: "#f8fafc", textTransform: "uppercase", letterSpacing: "1px" }}>
+        {/* --- TRANSFER TOTAL --- */}
+        <div style={{ 
+          background: "#fff", 
+          borderRadius: "16px", 
+          padding: "8px 12px", 
+          border: "2px solid #000",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "10px"
+        }}>
+          <div style={{ fontSize: "11px", fontWeight: "800", color: "#ED1C24", textTransform: "uppercase", letterSpacing: "1px" }}>
             Available To Transfer
           </div>
-          <div style={{ fontSize: "38px", fontWeight: "900", color: "#ffffff", margin: "4px 0 10px", wordBreak: "break-all" }}>
+          <div style={{ fontSize: "22px", fontWeight: "900", color: "#ED1C24" }}>
             {availableToTransfer >= 0 ? fmtCur(availableToTransfer) : fmtCurNeg(availableToTransfer)}
-          </div>
-          <div style={{ fontSize: "14px", fontWeight: "700", color: "#e2e8f0", display: "flex", alignItems: "center", gap: "6px" }}>
-            → Send to Robinhood
           </div>
         </div>
 
@@ -368,7 +451,7 @@ export default function FinanceApp() {
 // --- Reusable Sub-Components ---
 
 const Section = ({ title, themeColor, bg, border, children }) => (
-  <div style={{ background: bg, borderRadius: "16px", padding: "20px", border: `2px solid ${border}`, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+  <div style={{ background: bg, borderRadius: "16px", padding: "12px", border: `2px solid ${border}`, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
     <h2 style={{ margin: "0 0 16px", fontSize: "17px", fontWeight: "900", color: themeColor, display: "flex", alignItems: "center" }}>
       {title}
     </h2>
@@ -387,8 +470,10 @@ const CommaInput = ({ value, onChange, placeholder, isNegative, prefix, text, bg
     onChange(parts.join('.'));
   };
 
+  const borderStyle = border === "none" ? "none" : `1.5px solid ${border}`;
+
   return (
-    <div style={{ display: "flex", alignItems: "center", background: bg, borderRadius: "8px", padding: "8px 10px", border: `1.5px solid ${border}`, width: "100%", boxSizing: "border-box" }}>
+    <div style={{ display: "flex", alignItems: "center", background: bg, borderRadius: "8px", padding: "5px 8px", border: borderStyle, width: "100%", boxSizing: "border-box" }}>
       <span style={{ color: text, fontWeight: "800", marginRight: "2px", fontSize: "14px" }}>
         {isNegative ? `(${prefix}` : prefix}
       </span>
@@ -413,5 +498,5 @@ const DaysIndicator = ({ days, type }) => {
     content = <>In <span style={{color: "red"}}>{days}</span> d</>;
   }
 
-  return <div style={{ fontSize: "10px", color: "#000", fontWeight: "normal", textAlign: "right", letterSpacing: "0.2px", opacity: 0.7 }}>{content}</div>;
+  return <div style={{ fontSize: "10px", color: "#000", fontWeight: "normal", letterSpacing: "0.2px", opacity: 0.7 }}>{content}</div>;
 };

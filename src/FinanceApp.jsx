@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { db } from "./firebaseConfig";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 
 // --- Time & Math Helpers ---
 const now = new Date();
@@ -47,9 +45,7 @@ export default function FinanceApp() {
 
   useEffect(() => {
     const handler = (e) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e);
     };
 
@@ -67,7 +63,6 @@ export default function FinanceApp() {
     }
   };
 
-  // Initial State Models
   const [accounts, setAccounts] = useState([
     { id: 1, bank: "Mt.McKinley", bal: "", isHidden: false },
     {
@@ -107,7 +102,6 @@ export default function FinanceApp() {
     );
   };
 
-  // Derived filtered lists based on the "CC" naming rule
   const creditCards = accounts.filter((acc) => isCC(acc.bank));
   const savingsAccounts = accounts.filter((acc) => !isCC(acc.bank));
 
@@ -133,7 +127,7 @@ export default function FinanceApp() {
         availableToTransfer,
         lastUpdated: serverTimestamp(),
       });
-      // Format it for the alert nicely ("March 2026")
+
       const d = new Date(budgetMonth + "-01T00:00:00");
       const niceLabel = d.toLocaleString("en-US", {
         month: "long",
@@ -148,7 +142,6 @@ export default function FinanceApp() {
   const appRef = useRef(null);
 
   const handleSharePDF = () => {
-    // 1. Calculate the dynamic filename: TuckAway_MM_MONYY_On_DD-MM-YYYY
     const dateObj = new Date(budgetMonth + "-01T00:00:00");
     const monthNum = String(dateObj.getMonth() + 1).padStart(2, "0");
     const months = [
@@ -175,14 +168,11 @@ export default function FinanceApp() {
 
     const fileName = `TuckAway_${monthNum}_${monthName}${yearShort}_On_${tdDay}-${tdMonth}-${tdYear}`;
 
-    // 2. Temporarily change doc title (browser uses this as the default filename)
     const originalTitle = document.title;
     document.title = fileName;
 
-    // 3. Trigger print
     window.print();
 
-    // 4. Restore original title after a short delay so the print dialog captures the new one
     setTimeout(() => {
       document.title = originalTitle;
     }, 100);
@@ -220,6 +210,7 @@ export default function FinanceApp() {
           @page { size: auto; margin: 0.25in; }
         }
       `}</style>
+
       <div
         style={{
           maxWidth: "500px",
@@ -229,7 +220,6 @@ export default function FinanceApp() {
           gap: "10px",
         }}
       >
-        {/* --- REPORT HEADER (Hidden in PWA, Shown in PDF) --- */}
         <div
           className="report-only"
           style={{
@@ -261,7 +251,6 @@ export default function FinanceApp() {
           </div>
         </div>
 
-        {/* --- HEADER --- */}
         <div
           className="print-hide"
           style={{
@@ -272,7 +261,6 @@ export default function FinanceApp() {
             border: "1px solid #e2e8f0",
           }}
         >
-          {/* --- MAIN PWA HEADER --- */}
           <div
             style={{
               display: "flex",
@@ -315,7 +303,6 @@ export default function FinanceApp() {
               </button>
             )}
 
-            {/* Combined Clickable Title & Month */}
             <div style={{ position: "relative" }} className="print-hide">
               <h1
                 style={{
@@ -406,7 +393,6 @@ export default function FinanceApp() {
           </div>
         </div>
 
-        {/* --- SAVINGS ASSETS --- */}
         <Section
           title="Savings Accounts"
           themeColor="#000"
@@ -419,9 +405,8 @@ export default function FinanceApp() {
             </p>
           )}
 
-          {savingsAccounts.map((acc, i) => (
+          {savingsAccounts.map((acc) => (
             <React.Fragment key={acc.id}>
-              {/* No Cycle/Due inputs for Savings */}
               <div
                 style={{
                   display: "flex",
@@ -474,6 +459,7 @@ export default function FinanceApp() {
                     {acc.bank}
                   </div>
                 </div>
+
                 {!acc.isHidden && (
                   <div style={{ flex: 0.8 }}>
                     <CommaInput
@@ -518,7 +504,6 @@ export default function FinanceApp() {
           </div>
         </Section>
 
-        {/* --- CC SECTION --- */}
         <Section title="Credit Cards" themeColor="#000" bg="#fff" border="#000">
           {creditCards.length === 0 && (
             <p style={{ fontSize: "13px", color: "#000", fontStyle: "italic" }}>
@@ -526,7 +511,7 @@ export default function FinanceApp() {
             </p>
           )}
 
-          {creditCards.map((cc, i) => (
+          {creditCards.map((cc) => (
             <React.Fragment key={cc.id}>
               <div
                 style={{
@@ -536,7 +521,6 @@ export default function FinanceApp() {
                   marginBottom: cc.isHidden ? "2px" : "12px",
                 }}
               >
-                {/* Toggle Button */}
                 <button
                   className="print-hide"
                   onClick={() => updateAccount(cc.id, "isHidden", !cc.isHidden)}
@@ -576,7 +560,6 @@ export default function FinanceApp() {
                       display: "flex",
                     }}
                   >
-                    {/* Left Column: Name & Cycle */}
                     <div
                       style={{
                         flex: 1.2,
@@ -603,53 +586,67 @@ export default function FinanceApp() {
                           padding: "4px 10px",
                           background: "#f8fafc",
                           display: "flex",
-                          flexDirection: "row",
                           alignItems: "center",
-                          gap: "6px",
+                          justifyContent: "space-between",
+                          gap: "8px",
                           flexWrap: "nowrap",
+                          minWidth: 0,
                         }}
                       >
-                        <span
+                        <div
                           style={{
-                            fontSize: "9px",
-                            color: "#64748b",
-                            fontWeight: "700",
-                            textTransform: "uppercase",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            flexShrink: 0,
                             whiteSpace: "nowrap",
                           }}
                         >
-                          Cycle
-                        </span>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="DD"
-                          value={cc.cycle || ""}
-                          onChange={(e) =>
-                            updateAccount(
-                              cc.id,
-                              "cycle",
-                              e.target.value.replace(/\D/g, ""),
-                            )
-                          }
-                          style={{
-                            width: "35px",
-                            background: "#fff",
-                            border: "1px solid #000",
-                            borderRadius: "4px",
-                            padding: "0",
-                            margin: "0",
-                            color: "#000",
-                            fontSize: "12px",
-                            fontWeight: "800",
-                            textAlign: "center",
-                            outline: "none",
-                            lineHeight: "20px",
-                            height: "20px",
-                            boxSizing: "border-box",
-                          }}
-                        />
-                        <div style={{ flexShrink: 0 }}>
+                          <span
+                            style={{
+                              fontSize: "9px",
+                              color: "#64748b",
+                              fontWeight: "700",
+                              textTransform: "uppercase",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            Cycle
+                          </span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="DD"
+                            value={cc.cycle || ""}
+                            onChange={(e) =>
+                              updateAccount(
+                                cc.id,
+                                "cycle",
+                                e.target.value.replace(/\D/g, ""),
+                              )
+                            }
+                            style={{
+                              width: "44px",
+                              minWidth: "44px",
+                              background: "#fff",
+                              border: "1px solid #000",
+                              borderRadius: "4px",
+                              padding: "0 4px",
+                              margin: "0",
+                              color: "#000",
+                              fontSize: "12px",
+                              fontWeight: "800",
+                              textAlign: "center",
+                              outline: "none",
+                              lineHeight: "20px",
+                              height: "22px",
+                              boxSizing: "border-box",
+                              flexShrink: 0,
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ flexShrink: 0, whiteSpace: "nowrap" }}>
                           <DaysIndicator
                             days={calculateDaysUntil(cc.cycle)}
                             type="cycle"
@@ -658,7 +655,6 @@ export default function FinanceApp() {
                       </div>
                     </div>
 
-                    {/* Right Column: Amount & Due */}
                     <div
                       style={{
                         flex: 0.8,
@@ -683,53 +679,67 @@ export default function FinanceApp() {
                           padding: "4px 10px",
                           background: "#f8fafc",
                           display: "flex",
-                          flexDirection: "row",
                           alignItems: "center",
-                          gap: "6px",
+                          justifyContent: "space-between",
+                          gap: "8px",
                           flexWrap: "nowrap",
+                          minWidth: 0,
                         }}
                       >
-                        <span
+                        <div
                           style={{
-                            fontSize: "9px",
-                            color: "#64748b",
-                            fontWeight: "700",
-                            textTransform: "uppercase",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            flexShrink: 0,
                             whiteSpace: "nowrap",
                           }}
                         >
-                          Due
-                        </span>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="DD"
-                          value={cc.due || ""}
-                          onChange={(e) =>
-                            updateAccount(
-                              cc.id,
-                              "due",
-                              e.target.value.replace(/\D/g, ""),
-                            )
-                          }
-                          style={{
-                            width: "35px",
-                            background: "#fff",
-                            border: "1px solid #000",
-                            borderRadius: "4px",
-                            padding: "0",
-                            margin: "0",
-                            color: "#000",
-                            fontSize: "12px",
-                            fontWeight: "800",
-                            textAlign: "center",
-                            outline: "none",
-                            lineHeight: "20px",
-                            height: "20px",
-                            boxSizing: "border-box",
-                          }}
-                        />
-                        <div style={{ flexShrink: 0 }}>
+                          <span
+                            style={{
+                              fontSize: "9px",
+                              color: "#64748b",
+                              fontWeight: "700",
+                              textTransform: "uppercase",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            Due
+                          </span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="DD"
+                            value={cc.due || ""}
+                            onChange={(e) =>
+                              updateAccount(
+                                cc.id,
+                                "due",
+                                e.target.value.replace(/\D/g, ""),
+                              )
+                            }
+                            style={{
+                              width: "44px",
+                              minWidth: "44px",
+                              background: "#fff",
+                              border: "1px solid #000",
+                              borderRadius: "4px",
+                              padding: "0 4px",
+                              margin: "0",
+                              color: "#000",
+                              fontSize: "12px",
+                              fontWeight: "800",
+                              textAlign: "center",
+                              outline: "none",
+                              lineHeight: "20px",
+                              height: "22px",
+                              boxSizing: "border-box",
+                              flexShrink: 0,
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ flexShrink: 0, whiteSpace: "nowrap" }}>
                           <DaysIndicator
                             days={calculateDaysUntil(cc.due)}
                             type="due"
@@ -771,7 +781,6 @@ export default function FinanceApp() {
           </div>
         </Section>
 
-        {/* --- TRANSFER TOTAL --- */}
         <div
           style={{
             background: "#fff",
@@ -804,7 +813,6 @@ export default function FinanceApp() {
           </div>
         </div>
 
-        {/* --- ACTIONS --- */}
         <div
           className="print-hide"
           style={{
@@ -842,8 +850,6 @@ export default function FinanceApp() {
     </div>
   );
 }
-
-// --- Reusable Sub-Components ---
 
 const Section = ({ title, themeColor, bg, border, children }) => (
   <div
@@ -902,20 +908,22 @@ const CommaInput = ({
         border: borderStyle,
         width: "100%",
         boxSizing: "border-box",
-        justifyContent: "flex-end", // Right-align the whole group
+        justifyContent: "flex-end",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: "0px" }}>
         <span
           style={{
             color: text,
             fontWeight: "800",
             fontSize: "14px",
             whiteSpace: "nowrap",
+            lineHeight: 1,
           }}
         >
           {isNegative ? `(${prefix}` : prefix}
         </span>
+
         <input
           type="text"
           inputMode="decimal"
@@ -923,19 +931,30 @@ const CommaInput = ({
           onChange={handleInput}
           placeholder={placeholder || "0.00"}
           style={{
-            width: "85px", // Compact width to keep symbols close
+            width: "58px",
+            minWidth: "58px",
             background: "transparent",
             border: "none",
             color: text,
             fontSize: "16px",
             fontWeight: "800",
             outline: "none",
-            textAlign: "left", // Left-align text relative to the symbol
-            padding: "0 2px",
+            textAlign: "right",
+            padding: "0",
+            margin: "0",
+            lineHeight: 1,
           }}
         />
+
         {isNegative && (
-          <span style={{ color: text, fontWeight: "800", fontSize: "14px" }}>
+          <span
+            style={{
+              color: text,
+              fontWeight: "800",
+              fontSize: "14px",
+              lineHeight: 1,
+            }}
+          >
             )
           </span>
         )}
@@ -969,6 +988,9 @@ const DaysIndicator = ({ days, type }) => {
         fontWeight: "normal",
         letterSpacing: "0.2px",
         opacity: 0.7,
+        whiteSpace: "nowrap",
+        lineHeight: 1.1,
+        textAlign: "right",
       }}
     >
       {content}

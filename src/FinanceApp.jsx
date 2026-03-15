@@ -473,15 +473,41 @@ const CommaInput = ({ value, onChange, placeholder, isNegative, prefix, text, bg
   const borderStyle = border === "none" ? "none" : `1.5px solid ${border}`;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", background: bg, borderRadius: "8px", padding: "5px 8px", border: borderStyle, width: "100%", boxSizing: "border-box" }}>
-      <span style={{ color: text, fontWeight: "800", marginRight: "2px", fontSize: "14px" }}>
-        {isNegative ? `(${prefix}` : prefix}
-      </span>
-      <input 
-        type="text" inputMode="decimal" value={value} onChange={handleInput} placeholder={placeholder || "0.00"}
-        style={{ width: "100%", background: "transparent", border: "none", color: text, fontSize: "16px", fontWeight: "800", outline: "none", textAlign: "right", padding: 0 }}
-      />
-      {isNegative && <span style={{ color: text, fontWeight: "800", marginLeft: "2px", fontSize: "14px" }}>)</span>}
+    <div style={{ 
+      display: "flex", 
+      alignItems: "center", 
+      background: bg, 
+      borderRadius: "8px", 
+      padding: "5px 8px", 
+      border: borderStyle, 
+      width: "100%", 
+      boxSizing: "border-box",
+      justifyContent: "flex-end" // Right-align the whole group
+    }}>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <span style={{ color: text, fontWeight: "800", fontSize: "14px", whiteSpace: "nowrap" }}>
+          {isNegative ? `(${prefix}` : prefix}
+        </span>
+        <input 
+          type="text" 
+          inputMode="decimal" 
+          value={value} 
+          onChange={handleInput} 
+          placeholder={placeholder || "0.00"}
+          style={{ 
+            width: "85px", // Compact width to keep symbols close
+            background: "transparent", 
+            border: "none", 
+            color: text, 
+            fontSize: "16px", 
+            fontWeight: "800", 
+            outline: "none", 
+            textAlign: "left", // Left-align text relative to the symbol
+            padding: "0 2px" 
+          }}
+        />
+        {isNegative && <span style={{ color: text, fontWeight: "800", fontSize: "14px" }}>)</span>}
+      </div>
     </div>
   );
 };

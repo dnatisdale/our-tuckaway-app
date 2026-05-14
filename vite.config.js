@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "icon-192.png", "icon-512.png"],
+      includeAssets: ["favicon.png", "icon-192.png", "icon-512.png"],
       manifest: {
         name: "Our TuckAway",
         short_name: "TuckAway",

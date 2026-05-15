@@ -14,7 +14,9 @@ const normalizeDecimalString = (value, decimals = 2) => {
 };
 
 const cleanDayInput = (value) => {
-  const digitsOnly = String(value || "").replace(/\D/g, "").slice(0, 2);
+  const digitsOnly = String(value || "")
+    .replace(/\D/g, "")
+    .slice(0, 2);
   if (!digitsOnly) return "";
 
   const dayNum = parseInt(digitsOnly, 10);
@@ -46,7 +48,7 @@ const calculateDaysUntil = (dayStr, referenceDateStr) => {
 };
 
 const fmtCur = (amount) => {
-  const val = Number(amount) || 0;
+  const val = Number(String(amount || "").replace(/,/g, "")) || 0;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -54,11 +56,12 @@ const fmtCur = (amount) => {
 };
 
 const fmtCurNeg = (amount) => {
-  const val = Math.abs(Number(amount) || 0);
+  const val = Math.abs(Number(String(amount || "").replace(/,/g, "")) || 0);
   return `(${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val)})`;
 };
 
-const parseMoneyValue = (value) => Number(String(value || "").replace(/,/g, "")) || 0;
+const parseMoneyValue = (value) =>
+  Number(String(value || "").replace(/,/g, "")) || 0;
 
 const csvEscape = (value) => {
   const text = String(value ?? "");
@@ -164,9 +167,7 @@ export default function FinanceApp() {
 
   const handleShareApp = async () => {
     const shareUrl = window.location.href;
-    const shareTitle = subject
-      ? `Our TuckAway - ${subject}`
-      : "Our TuckAway";
+    const shareTitle = subject ? `Our TuckAway - ${subject}` : "Our TuckAway";
     const shareText = "Open Our TuckAway budget app.";
 
     try {
@@ -332,13 +333,11 @@ export default function FinanceApp() {
   const savingsAccounts = accounts.filter((acc) => !isCC(acc.bank));
 
   const totalCCUSD = creditCards.reduce(
-    (acc, cc) =>
-      cc.isHidden ? acc : acc + parseMoneyValue(cc.bal),
+    (acc, cc) => (cc.isHidden ? acc : acc + parseMoneyValue(cc.bal)),
     0,
   );
   const totalCashUSD = savingsAccounts.reduce(
-    (acc, cash) =>
-      cash.isHidden ? acc : acc + parseMoneyValue(cash.bal),
+    (acc, cash) => (cash.isHidden ? acc : acc + parseMoneyValue(cash.bal)),
     0,
   );
   const availableToTransfer = totalCashUSD - totalCCUSD;
@@ -509,6 +508,184 @@ export default function FinanceApp() {
         .black-calendar::-webkit-calendar-picker-indicator {
           filter: grayscale(1) brightness(0);
           cursor: pointer;
+        }
+
+
+        .cc-card-shell {
+          min-width: 0;
+        }
+
+
+        .cc-item-row {
+          display: grid !important;
+          grid-template-columns: 26px minmax(0, 1fr) !important;
+          gap: 8px !important;
+          align-items: start !important;
+          padding-left: 0 !important;
+        }
+
+        .cc-item-row > button[aria-label="Toggle Visibility"] {
+          justify-self: center !important;
+          margin-top: 12px !important;
+        }
+
+        .scb-group-toggle {
+          flex-direction: row-reverse !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          gap: 8px !important;
+        }
+
+        .scb-group-toggle > span {
+          flex: 1 1 auto !important;
+        }
+
+        .scb-group-toggle > div {
+          flex: 0 0 auto !important;
+        }
+
+        .cc-top-row {
+          display: grid !important;
+          grid-template-columns: minmax(0, 1fr) minmax(100px, 120px) !important;
+          gap: 10px !important;
+          align-items: center !important;
+        }
+
+        .cc-scb-top-row {
+          grid-template-columns: minmax(0, 1fr) auto !important;
+        }
+
+        .cc-name-box {
+          min-width: 0 !important;
+          overflow: hidden !important;
+          white-space: nowrap !important;
+          text-overflow: ellipsis !important;
+          box-sizing: border-box !important;
+        }
+
+        .cc-amount-pair {
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          min-width: 0 !important;
+        }
+
+        .cc-thb-wrap {
+          width: 96px;
+          min-width: 96px;
+        }
+
+        .cc-usd-wrap {
+          width: 104px;
+          min-width: 104px;
+        }
+
+        .cc-thb-wrap > div,
+        .cc-usd-wrap {
+          height: 34px !important;
+          min-height: 34px !important;
+          padding-top: 4px !important;
+          padding-bottom: 4px !important;
+        }
+
+        .cc-dates-row {
+          display: grid !important;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+          gap: 8px !important;
+          align-items: center !important;
+        }
+
+        .cc-date-group {
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          min-width: 0 !important;
+          white-space: nowrap !important;
+        }
+
+        .cc-date-spacer {
+          display: none !important;
+        }
+
+        .cc-day-input {
+          flex: 0 0 36px !important;
+        }
+
+        @media (max-width: 520px) {
+          .cc-item-row {
+            gap: 6px !important;
+            margin-bottom: 10px !important;
+          }
+
+          .scb-cc-item-row {
+            padding-left: 0 !important;
+          }
+
+          .cc-card-shell {
+            border-radius: 10px !important;
+          }
+
+          .cc-top-row {
+            padding: 8px !important;
+            gap: 8px !important;
+          }
+
+          .cc-standard-top-row {
+            grid-template-columns: minmax(0, 1fr) minmax(92px, 112px) !important;
+          }
+
+          .cc-scb-top-row {
+            grid-template-columns: minmax(0, 1fr) !important;
+          }
+
+          .cc-amount-pair {
+            width: 100% !important;
+            display: grid !important;
+            grid-template-columns: 96px 104px !important;
+            justify-content: end !important;
+            gap: 8px !important;
+          }
+
+          .cc-thb-wrap {
+            width: 96px !important;
+            min-width: 96px !important;
+          }
+
+          .cc-usd-wrap {
+            width: 104px !important;
+            min-width: 104px !important;
+          }
+
+          .cc-dates-row {
+            padding: 6px 8px !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+            gap: 6px !important;
+          }
+
+          .cc-date-group {
+            gap: 4px !important;
+          }
+
+          .cc-date-label {
+            font-size: 9px !important;
+          }
+
+          .cc-day-input {
+            flex-basis: 30px !important;
+            width: 30px !important;
+            height: 22px !important;
+            font-size: 13px !important;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .cc-dates-row {
+            grid-template-columns: 1fr !important;
+          }
+
+          .cc-date-group {
+            justify-content: flex-start !important;
+          }
         }
 
         @media print {
@@ -977,10 +1154,13 @@ export default function FinanceApp() {
           {/* SCB Savings Group */}
           <div style={{ marginTop: "4px", marginBottom: "8px" }}>
             <button
+              className="scb-group-toggle"
               onClick={() => setScbSavingsExpanded(!scbSavingsExpanded)}
               style={{
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "space-between",
+                flexDirection: "row-reverse",
                 gap: "8px",
                 background: "none",
                 border: "none",
@@ -1039,7 +1219,7 @@ export default function FinanceApp() {
                         alignItems: "center",
                         gap: "10px",
                         marginBottom: acc.isHidden ? "2px" : "8px",
-                        paddingLeft: "12px",
+                        paddingLeft: "0",
                       }}
                     >
                       <div
@@ -1137,6 +1317,8 @@ export default function FinanceApp() {
               marginTop: "16px",
               padding: "12px",
               background: "#f8fafc",
+              border: "1.5px solid #000",
+              borderRadius: "8px",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -1176,6 +1358,7 @@ export default function FinanceApp() {
             .map((cc) => (
               <React.Fragment key={cc.id}>
                 <div
+                  className="cc-item-row"
                   style={{
                     display: "flex",
                     gap: "10px",
@@ -1215,6 +1398,7 @@ export default function FinanceApp() {
                     </div>
                   ) : (
                     <div
+                      className="cc-card-shell"
                       style={{
                         flex: 1,
                         border: "2px solid #000",
@@ -1225,6 +1409,7 @@ export default function FinanceApp() {
                     >
                       {/* Top Row: Name and Balance */}
                       <div
+                        className="cc-top-row cc-standard-top-row"
                         style={{
                           padding: "10px 12px 6px",
                           display: "flex",
@@ -1234,6 +1419,7 @@ export default function FinanceApp() {
                         }}
                       >
                         <div
+                          className="cc-name-box"
                           style={{
                             flex: 1,
                             background: "#fff",
@@ -1250,7 +1436,10 @@ export default function FinanceApp() {
                         >
                           {cc.bank}
                         </div>
-                        <div style={{ width: "120px" }}>
+                        <div
+                          className="cc-standard-amount"
+                          style={{ width: "120px" }}
+                        >
                           <CommaInput
                             value={cc.bal}
                             onChange={(val) => updateAccount(cc.id, "bal", val)}
@@ -1265,6 +1454,7 @@ export default function FinanceApp() {
 
                       {/* Bottom Row: Dates */}
                       <div
+                        className="cc-dates-row"
                         style={{
                           padding: "6px 12px",
                           background: "#f8fafc",
@@ -1275,6 +1465,7 @@ export default function FinanceApp() {
                         }}
                       >
                         <div
+                          className="cc-date-group"
                           style={{
                             flex: 1,
                             display: "flex",
@@ -1283,6 +1474,7 @@ export default function FinanceApp() {
                           }}
                         >
                           <span
+                            className="cc-date-label"
                             style={{
                               fontSize: "10px",
                               color: "#64748b",
@@ -1303,6 +1495,7 @@ export default function FinanceApp() {
                                 cleanDayInput(e.target.value),
                               )
                             }
+                            className="cc-day-input"
                             style={DAY_INPUT_STYLE}
                           />
                           <DaysIndicator
@@ -1310,8 +1503,12 @@ export default function FinanceApp() {
                             type="cycle"
                           />
                         </div>
-                        <div style={{ width: "20px" }}></div>
                         <div
+                          className="cc-date-spacer"
+                          style={{ width: "20px" }}
+                        ></div>
+                        <div
+                          className="cc-date-group"
                           style={{
                             flex: 1,
                             display: "flex",
@@ -1320,6 +1517,7 @@ export default function FinanceApp() {
                           }}
                         >
                           <span
+                            className="cc-date-label"
                             style={{
                               fontSize: "10px",
                               color: "#64748b",
@@ -1340,6 +1538,7 @@ export default function FinanceApp() {
                                 cleanDayInput(e.target.value),
                               )
                             }
+                            className="cc-day-input"
                             style={DAY_INPUT_STYLE}
                           />
                           <DaysIndicator
@@ -1357,10 +1556,13 @@ export default function FinanceApp() {
           {/* SCB Credit Card Group */}
           <div style={{ marginTop: "4px", marginBottom: "8px" }}>
             <button
+              className="scb-group-toggle"
               onClick={() => setScbCCExpanded(!scbCCExpanded)}
               style={{
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "space-between",
+                flexDirection: "row-reverse",
                 gap: "8px",
                 background: "none",
                 border: "none",
@@ -1412,12 +1614,13 @@ export default function FinanceApp() {
                 .map((cc) => (
                   <React.Fragment key={cc.id}>
                     <div
+                      className="cc-item-row scb-cc-item-row"
                       style={{
                         display: "flex",
                         gap: "10px",
                         alignItems: cc.isHidden ? "center" : "flex-start",
                         marginBottom: cc.isHidden ? "2px" : "12px",
-                        paddingLeft: "12px",
+                        paddingLeft: "0",
                       }}
                     >
                       <button
@@ -1452,6 +1655,7 @@ export default function FinanceApp() {
                         </div>
                       ) : (
                         <div
+                          className="cc-card-shell"
                           style={{
                             flex: 1,
                             border: "2px solid #000",
@@ -1462,6 +1666,7 @@ export default function FinanceApp() {
                         >
                           {/* Top Row: Name, THB, and Balance */}
                           <div
+                            className="cc-top-row cc-scb-top-row"
                             style={{
                               padding: "10px 12px 6px",
                               display: "flex",
@@ -1471,6 +1676,7 @@ export default function FinanceApp() {
                             }}
                           >
                             <div
+                              className="cc-name-box"
                               style={{
                                 flex: 1,
                                 background: "#fff",
@@ -1488,13 +1694,17 @@ export default function FinanceApp() {
                               {cc.bank}
                             </div>
                             <div
+                              className="cc-amount-pair"
                               style={{
                                 display: "flex",
                                 alignItems: "center",
                                 gap: "8px",
                               }}
                             >
-                              <div style={{ width: "90px" }}>
+                              <div
+                                className="cc-thb-wrap"
+                                style={{ width: "96px" }}
+                              >
                                 <CommaInput
                                   value={cc.balTHB || ""}
                                   onChange={(val) =>
@@ -1508,6 +1718,7 @@ export default function FinanceApp() {
                                 />
                               </div>
                               <div
+                                className="cc-usd-wrap"
                                 style={{
                                   width: "110px",
                                   background: "#f8fafc",
@@ -1536,6 +1747,7 @@ export default function FinanceApp() {
 
                           {/* Bottom Row: Dates */}
                           <div
+                            className="cc-dates-row"
                             style={{
                               padding: "6px 12px",
                               background: "#f8fafc",
@@ -1546,6 +1758,7 @@ export default function FinanceApp() {
                             }}
                           >
                             <div
+                              className="cc-date-group"
                               style={{
                                 flex: 1,
                                 display: "flex",
@@ -1554,6 +1767,7 @@ export default function FinanceApp() {
                               }}
                             >
                               <span
+                                className="cc-date-label"
                                 style={{
                                   fontSize: "10px",
                                   color: "#64748b",
@@ -1574,6 +1788,7 @@ export default function FinanceApp() {
                                     cleanDayInput(e.target.value),
                                   )
                                 }
+                                className="cc-day-input"
                                 style={DAY_INPUT_STYLE}
                               />
                               <DaysIndicator
@@ -1584,8 +1799,12 @@ export default function FinanceApp() {
                                 type="cycle"
                               />
                             </div>
-                            <div style={{ width: "20px" }}></div>
                             <div
+                              className="cc-date-spacer"
+                              style={{ width: "20px" }}
+                            ></div>
+                            <div
+                              className="cc-date-group"
                               style={{
                                 flex: 1,
                                 display: "flex",
@@ -1594,6 +1813,7 @@ export default function FinanceApp() {
                               }}
                             >
                               <span
+                                className="cc-date-label"
                                 style={{
                                   fontSize: "10px",
                                   color: "#64748b",
@@ -1614,6 +1834,7 @@ export default function FinanceApp() {
                                     cleanDayInput(e.target.value),
                                   )
                                 }
+                                className="cc-day-input"
                                 style={DAY_INPUT_STYLE}
                               />
                               <DaysIndicator
@@ -1634,6 +1855,8 @@ export default function FinanceApp() {
               marginTop: "16px",
               padding: "12px",
               background: "#f8fafc",
+              border: "1.5px solid #000",
+              borderRadius: "8px",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -1832,6 +2055,14 @@ const CommaInput = ({
     let val = e.target.value.replace(/[^0-9.]/g, "");
     const parts = val.split(".");
     if (parts.length > 2) parts.pop();
+
+    // Do not allow values like 0,350.
+    // 0350 becomes 350, while 0.35 stays 0.35.
+    parts[0] = (parts[0] || "").replace(/^0+(?=\d)/, "");
+    if (parts[0] === "" && parts.length > 1) {
+      parts[0] = "0";
+    }
+
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     onChange(parts.join("."));
   };

@@ -57,7 +57,7 @@ const fmtCur = (amount) => {
 
 const fmtCurNeg = (amount) => {
   const val = Math.abs(Number(String(amount || "").replace(/,/g, "")) || 0);
-  return `—${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val)}`;
+  return `-${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val)}`;
 };
 
 const parseMoneyValue = (value) =>
@@ -99,7 +99,7 @@ const CC_MONEY_FONT_WEIGHT = MONEY_FONT_WEIGHT;
 const CC_TOTAL_FONT_SIZE = TOTAL_FONT_SIZE;
 
 const DAY_INPUT_STYLE = {
-  width: "30px",
+  width: "24px",
   height: "22px",
   background: "#fff",
   border: "1.5px solid #000",
@@ -214,7 +214,7 @@ export default function FinanceApp() {
     { id: 1, bank: "Mt.McKinley", bal: "", isHidden: false },
     {
       id: 2,
-      bank: "Mt.MtKin CC.",
+      bank: "Mt.McKin CC.",
       bal: "",
       cycle: "",
       due: "",
@@ -570,23 +570,11 @@ export default function FinanceApp() {
 
 
         .cc-item-row {
-          display: grid !important;
-          grid-template-columns: 20px minmax(0, 1fr) !important;
+          display: flex !important;
+          flex-direction: column !important;
           gap: 4px !important;
-          align-items: start !important;
+          align-items: stretch !important;
           padding-left: 0 !important;
-        }
-
-        button[aria-label="Toggle Visibility"] {
-          width: 16px !important;
-          height: 16px !important;
-          min-width: 16px !important;
-          flex-basis: 16px !important;
-        }
-
-        .cc-item-row > button[aria-label="Toggle Visibility"] {
-          justify-self: center !important;
-          margin-top: 10px !important;
         }
 
         .scb-group-toggle {
@@ -751,27 +739,34 @@ export default function FinanceApp() {
 
 
         @media (max-width: 430px) {
-          .header-actions-stack {
-            width: 84px !important;
-            gap: 5px !important;
+          .header-actions-row {
+            gap: 4px !important;
           }
-          .header-actions-stack button {
-            width: 84px !important;
-            height: 26px !important;
-            font-size: 9px !important;
-            padding-left: 4px !important;
-            padding-right: 4px !important;
+          .header-actions-row button {
+            width: 32px !important;
+            height: 32px !important;
+            padding: 0 !important;
+          }
+          .header-actions-row button svg {
+            width: 16px !important;
+            height: 16px !important;
           }
         }
 
         @media print {
+          body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
           .print-hide { display: none !important; }
           .report-only { display: block !important; }
+          .cc-item-row { display: block !important; width: 100% !important; margin-bottom: 4px !important; }
+          .cc-card-shell { width: 100% !important; box-sizing: border-box !important; }
+          .cc-top-row { padding: 6px 10px 4px !important; }
+          .cc-dates-row { padding: 4px 10px !important; }
+          .cc-top-row, .cc-dates-row { box-sizing: border-box !important; }
           body, html, #root { background: #fff !important; margin: 0; padding: 0; }
-          div[style*="maxWidth"] { max-width: 100% !important; margin: 0 !important; width: 100% !important; }
-          div[style*="boxShadow"] { box-shadow: none !important; border: 1px solid #eee !important; margin-bottom: 20px !important; break-inside: avoid; }
-          h1, h2, h3, span, div { color: #000 !important; }
-          input { border: 1px solid #ccc !important; }
+          div { box-shadow: none !important; }
           @page { size: auto; margin: 0.25in; }
         }
       `}</style>
@@ -790,9 +785,7 @@ export default function FinanceApp() {
           style={{
             display: "none",
             textAlign: "center",
-            marginBottom: "10px",
-            borderBottom: "2px solid #000",
-            paddingBottom: "10px",
+            marginBottom: "0px",
           }}
         >
           <h1
@@ -816,171 +809,243 @@ export default function FinanceApp() {
             padding: "12px",
             boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
             border: "2px solid #000",
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
           }}
         >
+          <div
+            className="header-actions-row"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "6px",
+              width: "100%",
+            }}
+          >
+            <button
+              onClick={handleInstall}
+              title="Install Our TuckAway"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "36px",
+                height: "36px",
+                background: "#FF3B30",
+                border: "2px solid #000",
+                borderRadius: "8px",
+                cursor: "pointer",
+                padding: "0",
+                color: "#000",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+            </button>
+
+            <button
+              onClick={handleShareApp}
+              title="Share Our TuckAway"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "36px",
+                height: "36px",
+                background: "#FFCC00",
+                border: "2px solid #000",
+                borderRadius: "8px",
+                cursor: "pointer",
+                padding: "0",
+                color: "#000",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+            </button>
+
+            <button
+              onClick={handleClearAll}
+              title="Clear all account amounts"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "36px",
+                height: "36px",
+                background: "#3399FF",
+                border: "2px solid #000",
+                borderRadius: "8px",
+                cursor: "pointer",
+                padding: "0",
+                color: "#000",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+              </svg>
+            </button>
+
+            <button
+              onClick={handleSharePDF}
+              title="Print"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "36px",
+                height: "36px",
+                background: "#34C759",
+                border: "2px solid #000",
+                borderRadius: "8px",
+                cursor: "pointer",
+                padding: "0",
+                color: "#000",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+            </button>
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: "22px",
+                fontWeight: "900",
+                color: "#00247D",
+                lineHeight: "1.2",
+                fontFamily: "'Trebuchet MS', 'Segoe UI', Arial, sans-serif",
+                letterSpacing: "0.2px",
+              }}
+            >
+              Our TuckAway
+            </h1>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                marginTop: "6px",
+              }}
+            >
+              <span
+                style={{
+                  color: "#000",
+                  fontSize: "17px",
+                  fontWeight: "900",
+                  lineHeight: 1,
+                }}
+              >
+                Subject:
+              </span>
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder=""
+                aria-label="Budget subject"
+                style={{
+                  width: `${Math.max(subject.length, 1)}ch`,
+                  minWidth: "1ch",
+                  maxWidth: "230px",
+                  background: "transparent",
+                  border: "none",
+                  borderBottom: "1px solid #A51931",
+                  color: "#A51931",
+                  fontSize: "17px",
+                  fontWeight: "900",
+                  fontFamily: "inherit",
+                  outline: "none",
+                  padding: "0 0 3px",
+                  textAlign: "left",
+                  lineHeight: 1.1,
+                }}
+              />
+            </div>
+          </div>
+
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "flex-start",
-              position: "relative",
-              minHeight: "114px",
-              marginBottom: "12px",
+              alignItems: "flex-end",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "stretch",
-                gap: "6px",
-                position: "absolute",
-                top: 0,
-                left: 0,
-                zIndex: 8,
-                width: "92px",
-              }}
-              className="print-hide header-actions-stack"
-            >
-              <button
-                className="print-hide"
-                onClick={handleInstall}
-                title="Install Our TuckAway"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "4px",
-                  width: "92px",
-                  height: "27px",
-                  background: "#f1f5f9",
-                  border: "1.5px solid #94a3b8",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  padding: "3px 7px",
-                  color: "#000",
-                  fontSize: "10px",
-                  fontWeight: "900",
-                  lineHeight: 1,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.14)",
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                INSTALL
-              </button>
-
-              <button
-                className="print-hide"
-                onClick={handleShareApp}
-                title="Share Our TuckAway"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "4px",
-                  width: "92px",
-                  height: "27px",
-                  background: "#f1f5f9",
-                  border: "1.5px solid #94a3b8",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  padding: "3px 7px",
-                  color: "#000",
-                  fontSize: "10px",
-                  fontWeight: "900",
-                  lineHeight: 1,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.14)",
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="18" cy="5" r="3"></circle>
-                  <circle cx="6" cy="12" r="3"></circle>
-                  <circle cx="18" cy="19" r="3"></circle>
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                </svg>
-                SHARE
-              </button>
-
-              <button
-                className="print-hide"
-                onClick={handleClearAll}
-                title="Clear all account amounts"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "4px",
-                  width: "92px",
-                  height: "27px",
-                  background: "#f1f5f9",
-                  border: "1.5px solid #94a3b8",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  padding: "3px 7px",
-                  color: "#000",
-                  fontSize: "10px",
-                  fontWeight: "900",
-                  lineHeight: 1,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.14)",
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                  <path d="M10 11v6"></path>
-                  <path d="M14 11v6"></path>
-                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
-                </svg>
-                CLEAR
-              </button>
-
+            {/* Global Exchange Rate Input */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
               <a
                 href="https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=THB"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  position: "absolute",
-                  left: "102px",
-                  top: "3px",
-                  width: "150px",
                   fontSize: "10px",
                   fontWeight: "900",
                   color: "#0000EE",
@@ -990,156 +1055,37 @@ export default function FinanceApp() {
               >
                 XE.com USD to THB
               </a>
-            </div>
-
-            <div
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: "20px",
-                transform: "translateX(-50%)",
-                textAlign: "center",
-                zIndex: 5,
-                width: "auto",
-                whiteSpace: "nowrap",
-              }}
-              className="print-hide"
-            >
-              <h1
-                style={{
-                  margin: 0,
-                  fontSize: "22px",
-                  fontWeight: "900",
-                  color: "#00247D",
-                  lineHeight: "1.2",
-                  fontFamily: "'Trebuchet MS', 'Segoe UI', Arial, sans-serif",
-                  letterSpacing: "0.2px",
-                }}
-              >
-                Our TuckAway
-              </h1>
               <div
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                  marginTop: "6px",
+                  gap: "4px",
+                  background: "#f1f5f9",
+                  padding: "2px 6px",
+                  borderRadius: "8px",
+                  border: "1.5px solid #000",
                 }}
               >
                 <span
-                  style={{
-                    color: "#000",
-                    fontSize: "18px",
-                    fontWeight: "900",
-                    lineHeight: 1,
-                  }}
+                  style={{ fontSize: "10px", fontWeight: "900", color: "#000" }}
                 >
-                  Subject:
+                  THB Rate:
                 </span>
-                <input
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder=""
-                  aria-label="Budget subject"
-                  style={{
-                    width: `${Math.max(subject.length, 1)}ch`,
-                    minWidth: "1ch",
-                    maxWidth: "230px",
-                    background: "transparent",
-                    border: "none",
-                    borderBottom: "1.5px solid #A51931",
-                    color: "#A51931",
-                    fontSize: "18px",
-                    fontWeight: "900",
-                    fontFamily: "inherit",
-                    outline: "none",
-                    padding: "0 0 3px",
-                    textAlign: "left",
-                    lineHeight: 1.1,
-                  }}
-                />
-              </div>
-            </div>
-
-            <button
-              className="print-hide"
-              onClick={handleSharePDF}
-              title="Export to PDF"
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "4px",
-                color: "#000",
-                position: "absolute",
-                top: 0,
-                right: 0,
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <text
-                  x="12"
-                  y="16"
-                  textAnchor="middle"
-                  fill="currentColor"
-                  stroke="none"
-                  fontSize="7px"
-                  fontWeight="bold"
-                  fontFamily="sans-serif"
-                >
-                  PDF
-                </text>
-              </svg>
-            </button>
-          </div>
-
-          <div
-            className="print-hide"
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-end",
-              marginTop: "4px",
-            }}
-          >
-            {/* Global Exchange Rate Input */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                background: "#f1f5f9",
-                padding: "2px 6px",
-                borderRadius: "8px",
-                border: "1.5px solid #000",
-              }}
-            >
-              <span
-                style={{ fontSize: "10px", fontWeight: "900", color: "#000" }}
-              >
-                THB Rate:
-              </span>
               <input
                 type="text"
                 inputMode="decimal"
                 value={globalRate}
-                onChange={(e) =>
-                  updateGlobalRate(e.target.value.replace(/[^0-9.]/g, ""))
-                }
+                onChange={(e) => {
+                  let val = e.target.value.replace(/[^0-9.]/g, "");
+                  const parts = val.split(".");
+                  if (parts.length > 2) {
+                    val = parts[0] + "." + parts.slice(1).join("");
+                  }
+                  let [whole, fraction] = val.split(".");
+                  if (whole && whole.length > 2) whole = whole.slice(0, 2);
+                  if (fraction && fraction.length > 2) fraction = fraction.slice(0, 2);
+                  updateGlobalRate(fraction !== undefined ? `${whole}.${fraction}` : whole);
+                }}
                 onBlur={(e) =>
                   updateGlobalRate(
                     normalizeDecimalString(e.target.value) || "35.00",
@@ -1149,7 +1095,7 @@ export default function FinanceApp() {
                   width: `${Math.max(globalRate.length, 4)}ch`,
                   background: "transparent",
                   border: "none",
-                  borderBottom: "1.5px solid #A51931",
+                  borderBottom: "1px solid #A51931",
                   fontSize: "12px",
                   fontWeight: "900",
                   color: "#A51931",
@@ -1159,6 +1105,7 @@ export default function FinanceApp() {
                 }}
               />
             </div>
+          </div>
 
             <div
               style={{
@@ -1197,6 +1144,8 @@ export default function FinanceApp() {
               />
             </div>
           </div>
+
+
         </div>
 
         <Section
@@ -1231,25 +1180,8 @@ export default function FinanceApp() {
                       gap: "8px",
                     }}
                   >
-                    <button
-                      className="print-hide"
-                      onClick={() =>
-                        updateAccount(acc.id, "isHidden", !acc.isHidden)
-                      }
-                      style={{
-                        width: "18px",
-                        height: "18px",
-                        borderRadius: "50%",
-                        padding: 0,
-                        background: acc.isHidden ? "#000" : "#00247D",
-                        border: "2px solid #000",
-                        cursor: "pointer",
-                        flexShrink: 0,
-                        boxShadow: "inset 0 0 0 2px #fff",
-                      }}
-                      aria-label="Toggle Visibility"
-                    />
                     <div
+                      onClick={() => updateAccount(acc.id, "isHidden", !acc.isHidden)}
                       style={{
                         width: "100%",
                         background: acc.isHidden ? "transparent" : "#fff",
@@ -1262,7 +1194,10 @@ export default function FinanceApp() {
                         boxSizing: "border-box",
                         display: "flex",
                         alignItems: "center",
+                        cursor: "pointer",
+                        textDecoration: acc.isHidden ? "line-through" : "none",
                       }}
+                      title={acc.isHidden ? "Click to Include" : "Click to Exclude"}
                     >
                       {acc.bank}
                     </div>
@@ -1363,84 +1298,73 @@ export default function FinanceApp() {
                           gap: "8px",
                         }}
                       >
-                        <button
-                          className="print-hide"
-                          onClick={() =>
-                            updateAccount(acc.id, "isHidden", !acc.isHidden)
-                          }
-                          style={{
-                            width: "18px",
-                            height: "18px",
-                            borderRadius: "50%",
-                            padding: 0,
-                            background: acc.isHidden ? "#000" : "#00247D",
-                            border: "2px solid #000",
-                            cursor: "pointer",
-                            flexShrink: 0,
-                            boxShadow: "inset 0 0 0 2px #fff",
-                          }}
-                          aria-label="Toggle Visibility"
-                        />
                         <div
+                          onClick={() => updateAccount(acc.id, "isHidden", !acc.isHidden)}
                           style={{
                             width: "100%",
-                            background: "#fff",
+                            background: acc.isHidden ? "transparent" : "#fff",
                             borderRadius: "8px",
-                            border: "1.5px solid #000",
-                            color: "#000",
-                            fontSize: "14px",
+                            border: acc.isHidden ? "none" : "1.5px solid #000",
+                            color: acc.isHidden ? "#94a3b8" : "#000",
+                            fontSize: acc.isHidden ? "13px" : "14px",
                             fontWeight: "normal",
-                            padding: "5px 8px",
+                            padding: acc.isHidden ? "2px 0" : "5px 8px",
                             boxSizing: "border-box",
                             display: "flex",
                             alignItems: "center",
+                            cursor: "pointer",
+                            textDecoration: acc.isHidden ? "line-through" : "none",
                           }}
+                          title={acc.isHidden ? "Click to Include" : "Click to Exclude"}
                         >
                           {acc.bank}
                         </div>
                       </div>
 
-                      <div
-                        style={{
-                          flex: 1.2,
-                          display: "flex",
-                          gap: "8px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <div style={{ flex: 1 }}>
-                          <CommaInput
-                            value={acc.balTHB || ""}
-                            onChange={(val) =>
-                              updateAccount(acc.id, "balTHB", val)
-                            }
-                            placeholder="0.00"
-                            prefix="฿"
-                            bg="#fff"
-                            border="#000"
-                            isDebt={false}
-                          />
-                        </div>
+                      {!acc.isHidden && (
                         <div
                           style={{
-                            flex: 1,
-                            background: "#f8fafc",
-                            borderRadius: "8px",
-                            border: "1.5px solid #000",
-                            padding: "5px 8px",
-                            fontSize: MONEY_FONT_SIZE,
-                            fontWeight: MONEY_FONT_WEIGHT,
-                            color: getBalanceColor(acc.bal, false),
-                            textAlign: "right",
+                            flex: 1.2,
                             display: "flex",
-                            justifyContent: "flex-end",
+                            gap: "8px",
                             alignItems: "center",
-                            boxSizing: "border-box",
                           }}
                         >
-                          {fmtCur(acc.bal)}
+                          <div style={{ flex: 1 }}>
+                            <CommaInput
+                              value={acc.balTHB || ""}
+                              onChange={(val) =>
+                                updateAccount(acc.id, "balTHB", val)
+                              }
+                              placeholder="0.00"
+                              prefix="฿"
+                              bg="#fff"
+                              border="#000"
+                              isDebt={false}
+                            />
+                          </div>
+                          <div
+                            style={{
+                              flex: 1,
+                              background: "#f8fafc",
+                              borderRadius: "8px",
+                              border: "1.5px solid #000",
+                              padding: "5px 8px",
+                              height: "32px",
+                              fontSize: MONEY_FONT_SIZE,
+                              fontWeight: MONEY_FONT_WEIGHT,
+                              color: getBalanceColor(acc.bal, false),
+                              textAlign: "right",
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              alignItems: "center",
+                              boxSizing: "border-box",
+                            }}
+                          >
+                            {fmtCur(acc.bal)}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </React.Fragment>
                 ))}
@@ -1498,35 +1422,23 @@ export default function FinanceApp() {
                     gap: "10px",
                     alignItems: cc.isHidden ? "center" : "flex-start",
                     marginBottom: cc.isHidden ? "2px" : "12px",
+                    width: "100%",
                   }}
                 >
-                  <button
-                    className="print-hide"
-                    onClick={() =>
-                      updateAccount(cc.id, "isHidden", !cc.isHidden)
-                    }
-                    style={{
-                      marginTop: "12px",
-                      width: "16px",
-                      height: "16px",
-                      borderRadius: "50%",
-                      padding: 0,
-                      background: cc.isHidden ? "#000" : "#00247D",
-                      border: "2px solid #000",
-                      cursor: "pointer",
-                      flexShrink: 0,
-                      boxShadow: "inset 0 0 0 2px #fff",
-                    }}
-                    aria-label="Toggle Visibility"
-                  />
-
                   {cc.isHidden ? (
                     <div
+                      onClick={() => updateAccount(cc.id, "isHidden", false)}
                       style={{
                         color: "#94a3b8",
                         fontSize: "14px",
                         padding: "2px 0",
+                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        textDecoration: "line-through",
                       }}
+                      title="Click to Include"
                     >
                       {cc.bank}
                     </div>
@@ -1535,6 +1447,7 @@ export default function FinanceApp() {
                       className="cc-card-shell"
                       style={{
                         flex: 1,
+                        width: "100%",
                         border: "2px solid #000",
                         borderRadius: "12px",
                         overflow: "hidden",
@@ -1554,6 +1467,7 @@ export default function FinanceApp() {
                       >
                         <div
                           className="cc-name-box"
+                          onClick={() => updateAccount(cc.id, "isHidden", true)}
                           style={{
                             flex: 1,
                             background: "#fff",
@@ -1566,7 +1480,9 @@ export default function FinanceApp() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "flex-start",
+                            cursor: "pointer",
                           }}
+                          title="Click to Exclude"
                         >
                           {cc.bank}
                         </div>
@@ -1604,50 +1520,7 @@ export default function FinanceApp() {
                             flex: 1,
                             display: "flex",
                             alignItems: "center",
-                            gap: "8px",
-                          }}
-                        >
-                          <span
-                            className="cc-date-label"
-                            style={{
-                              fontSize: "10px",
-                              color: "#64748b",
-                              fontWeight: "800",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Cycle
-                          </span>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={cc.cycle || ""}
-                            onChange={(e) =>
-                              updateAccount(
-                                cc.id,
-                                "cycle",
-                                cleanDayInput(e.target.value),
-                              )
-                            }
-                            className="cc-day-input"
-                            style={DAY_INPUT_STYLE}
-                          />
-                          <DaysIndicator
-                            days={calculateDaysUntil(cc.cycle, referenceDate)}
-                            type="cycle"
-                          />
-                        </div>
-                        <div
-                          className="cc-date-spacer"
-                          style={{ width: "20px" }}
-                        ></div>
-                        <div
-                          className="cc-date-group"
-                          style={{
-                            flex: 1,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
+                            gap: "4px",
                           }}
                         >
                           <span
@@ -1678,6 +1551,49 @@ export default function FinanceApp() {
                           <DaysIndicator
                             days={calculateDaysUntil(cc.due, referenceDate)}
                             type="due"
+                          />
+                        </div>
+                        <div
+                          className="cc-date-spacer"
+                          style={{ width: "20px" }}
+                        ></div>
+                        <div
+                          className="cc-date-group"
+                          style={{
+                            flex: 1,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <span
+                            className="cc-date-label"
+                            style={{
+                              fontSize: "10px",
+                              color: "#64748b",
+                              fontWeight: "800",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Cycle
+                          </span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={cc.cycle || ""}
+                            onChange={(e) =>
+                              updateAccount(
+                                cc.id,
+                                "cycle",
+                                cleanDayInput(e.target.value),
+                              )
+                            }
+                            className="cc-day-input"
+                            style={DAY_INPUT_STYLE}
+                          />
+                          <DaysIndicator
+                            days={calculateDaysUntil(cc.cycle, referenceDate)}
+                            type="cycle"
                           />
                         </div>
                       </div>
@@ -1755,67 +1671,70 @@ export default function FinanceApp() {
                         alignItems: "flex-start",
                         marginBottom: "12px",
                         paddingLeft: "0",
+                        width: "100%",
                       }}
                     >
-                      <button
-                        className="print-hide"
-                        onClick={() =>
-                          updateAccount(cc.id, "isHidden", !cc.isHidden)
-                        }
-                        style={{
-                          marginTop: "12px",
-                          width: "16px",
-                          height: "16px",
-                          borderRadius: "50%",
-                          padding: 0,
-                          background: cc.isHidden ? "#000" : "#00247D",
-                          border: "2px solid #000",
-                          cursor: "pointer",
-                          flexShrink: 0,
-                          boxShadow: "inset 0 0 0 2px #fff",
-                        }}
-                        aria-label="Toggle Visibility"
-                      />
-
+                  {cc.isHidden ? (
+                    <div
+                      onClick={() => updateAccount(cc.id, "isHidden", false)}
+                      style={{
+                        color: "#94a3b8",
+                        fontSize: "14px",
+                        padding: "2px 0",
+                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        textDecoration: "line-through",
+                      }}
+                      title="Click to Include"
+                    >
+                      {cc.bank}
+                    </div>
+                  ) : (
+                    <div
+                      className="cc-card-shell"
+                      style={{
+                        flex: 1,
+                        width: "100%",
+                        border: "2px solid #000",
+                        borderRadius: "12px",
+                        overflow: "hidden",
+                        background: "#fff",
+                      }}
+                    >
+                      {/* Top Row: Name, THB, and Balance */}
                       <div
-                        className="cc-card-shell"
+                        className="cc-top-row cc-scb-top-row"
                         style={{
-                          flex: 1,
-                          border: "2px solid #000",
-                          borderRadius: "12px",
-                          overflow: "hidden",
-                          background: "#fff",
+                          padding: "10px 12px 6px",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: "10px",
                         }}
                       >
-                        {/* Top Row: Name, THB, and Balance */}
                         <div
-                          className="cc-top-row cc-scb-top-row"
+                          className="cc-name-box"
+                          onClick={() => updateAccount(cc.id, "isHidden", true)}
                           style={{
-                            padding: "10px 12px 6px",
+                            flex: 1,
+                            background: "#fff",
+                            borderRadius: "8px",
+                            border: "1.5px solid #000",
+                            padding: "5px 10px",
+                            fontSize: "14px",
+                            fontWeight: "normal",
+                            color: "#000",
                             display: "flex",
-                            justifyContent: "space-between",
                             alignItems: "center",
-                            gap: "10px",
+                            justifyContent: "flex-start",
+                            cursor: "pointer",
                           }}
+                          title="Click to Exclude"
                         >
-                          <div
-                            className="cc-name-box"
-                            style={{
-                              flex: 1,
-                              background: "#fff",
-                              borderRadius: "8px",
-                              border: "1.5px solid #000",
-                              padding: "5px 10px",
-                              fontSize: "14px",
-                              fontWeight: "normal",
-                              color: "#000",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "flex-start",
-                            }}
-                          >
-                            {cc.bank}
-                          </div>
+                          {cc.bank}
+                        </div>
                           <div
                             className="cc-amount-pair"
                             style={{
@@ -1848,6 +1767,7 @@ export default function FinanceApp() {
                                 borderRadius: "8px",
                                 border: "1.5px solid #000",
                                 padding: "5px 8px",
+                                height: "32px",
                                 display: "flex",
                                 justifyContent: "flex-end",
                                 alignItems: "center",
@@ -1886,50 +1806,7 @@ export default function FinanceApp() {
                               flex: 1,
                               display: "flex",
                               alignItems: "center",
-                              gap: "8px",
-                            }}
-                          >
-                            <span
-                              className="cc-date-label"
-                              style={{
-                                fontSize: "10px",
-                                color: "#64748b",
-                                fontWeight: "800",
-                                textTransform: "uppercase",
-                              }}
-                            >
-                              Cycle
-                            </span>
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              value={cc.cycle || ""}
-                              onChange={(e) =>
-                                updateAccount(
-                                  cc.id,
-                                  "cycle",
-                                  cleanDayInput(e.target.value),
-                                )
-                              }
-                              className="cc-day-input"
-                              style={DAY_INPUT_STYLE}
-                            />
-                            <DaysIndicator
-                              days={calculateDaysUntil(cc.cycle, referenceDate)}
-                              type="cycle"
-                            />
-                          </div>
-                          <div
-                            className="cc-date-spacer"
-                            style={{ width: "20px" }}
-                          ></div>
-                          <div
-                            className="cc-date-group"
-                            style={{
-                              flex: 1,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
+                              gap: "4px",
                             }}
                           >
                             <span
@@ -1962,9 +1839,53 @@ export default function FinanceApp() {
                               type="due"
                             />
                           </div>
+                          <div
+                            className="cc-date-spacer"
+                            style={{ width: "20px" }}
+                          ></div>
+                          <div
+                            className="cc-date-group"
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                            }}
+                          >
+                            <span
+                              className="cc-date-label"
+                              style={{
+                                fontSize: "10px",
+                                color: "#64748b",
+                                fontWeight: "800",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Cycle
+                            </span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={cc.cycle || ""}
+                              onChange={(e) =>
+                                updateAccount(
+                                  cc.id,
+                                  "cycle",
+                                  cleanDayInput(e.target.value),
+                                )
+                              }
+                              className="cc-day-input"
+                              style={DAY_INPUT_STYLE}
+                            />
+                            <DaysIndicator
+                              days={calculateDaysUntil(cc.cycle, referenceDate)}
+                              type="cycle"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
+                  </div>
                   </React.Fragment>
                 ))}
           </div>
@@ -2012,23 +1933,25 @@ export default function FinanceApp() {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: "10px",
+            gap: "clamp(4px, 2vw, 10px)",
+            flexWrap: "nowrap",
+            whiteSpace: "nowrap",
           }}
         >
           <div
             style={{
-              fontSize: "19px",
+              fontSize: "clamp(12px, 4.5vw, 19px)",
               fontWeight: MONEY_FONT_WEIGHT,
               color: "#000",
               textTransform: "uppercase",
-              letterSpacing: "1px",
+              letterSpacing: "clamp(0px, 0.5vw, 1px)",
             }}
           >
-            Available To Transfer
+            Funds to Transfer
           </div>
           <div
             style={{
-              fontSize: AVAILABLE_TRANSFER_FONT_SIZE,
+              fontSize: "clamp(15px, 6vw, 24px)",
               fontWeight: MONEY_FONT_WEIGHT,
               color: CC_MONEY_COLOR,
               textDecorationLine: "underline",
@@ -2164,7 +2087,7 @@ const CommaInput = ({
   // Savings: gray placeholder, black when filled
   // Debt (CC): always CC_MONEY_COLOR
   let textColor;
-  if (isDebt) {
+  if (isDebt || numValue < 0) {
     textColor = CC_MONEY_COLOR;
   } else {
     textColor = !value || numValue === 0 ? "#94a3b8" : "#000";
@@ -2173,7 +2096,13 @@ const CommaInput = ({
   const handleInput = (e) => {
     let val = e.target.value.replace(/[^0-9.]/g, "");
     const parts = val.split(".");
-    if (parts.length > 2) parts.pop();
+    if (parts.length > 2) {
+      val = parts[0] + "." + parts.slice(1).join("");
+      const newParts = val.split(".");
+      parts[0] = newParts[0];
+      parts[1] = newParts[1];
+      parts.length = 2;
+    }
 
     // Do not allow values like 0,350.
     // 0350 becomes 350, while 0.35 stays 0.35.
@@ -2183,12 +2112,31 @@ const CommaInput = ({
     }
 
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    
+    if (parts[1] !== undefined) {
+      parts[1] = parts[1].slice(0, 2);
+    }
+    
     onChange(parts.join("."));
+  };
+
+  const handleBlur = () => {
+    if (!value) return;
+    const num = parseFloat(value.replace(/,/g, ""));
+    if (!isNaN(num)) {
+      const formatted = num.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      if (formatted !== value) {
+        onChange(formatted);
+      }
+    }
   };
 
   const borderStyle = border === "none" ? "none" : `1.5px solid ${border}`;
   const rawDisplayText = value || placeholder || "0.00";
-  const displayText = `${isNegative ? "—" : ""}${prefix}${rawDisplayText}`;
+  const displayText = `${isNegative ? "-" : ""}${prefix}${rawDisplayText}`;
   const inputWidth = `${Math.max(displayText.length, 4)}ch`;
 
   // Shared money style for this input
@@ -2228,6 +2176,7 @@ const CommaInput = ({
         value={displayText}
         onChange={handleInput}
         onFocus={(e) => e.currentTarget.select()}
+        onBlur={handleBlur}
         aria-label="Money amount"
         style={{
           width: inputWidth,
@@ -2238,6 +2187,7 @@ const CommaInput = ({
           padding: "0",
           margin: "0",
           lineHeight: 1,
+          fontFamily: "inherit",
           ...moneyStyle,
         }}
       />

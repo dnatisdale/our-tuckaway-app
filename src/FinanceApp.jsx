@@ -57,7 +57,7 @@ const fmtCur = (amount) => {
 
 const fmtCurNeg = (amount) => {
   const val = Math.abs(Number(String(amount || "").replace(/,/g, "")) || 0);
-  return `(${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val)})`;
+  return `—${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val)}`;
 };
 
 const parseMoneyValue = (value) =>
@@ -99,12 +99,12 @@ const CC_MONEY_FONT_WEIGHT = MONEY_FONT_WEIGHT;
 const CC_TOTAL_FONT_SIZE = TOTAL_FONT_SIZE;
 
 const DAY_INPUT_STYLE = {
-  width: "36px",
-  height: "24px",
+  width: "30px",
+  height: "22px",
   background: "#fff",
   border: "1.5px solid #000",
   borderRadius: "5px",
-  fontSize: "14px",
+  fontSize: "13px",
   fontWeight: "900",
   color: "#000",
   textAlign: "center",
@@ -191,6 +191,23 @@ export default function FinanceApp() {
       if (error?.name === "AbortError") return;
       window.prompt("Copy this share link:", shareUrl);
     }
+  };
+
+  const handleClearAll = () => {
+    const ok = window.confirm(
+      "Clear all account amounts? This keeps account names, hidden/show settings, CYCLE days, DUE days, the THB rate, and the subject.",
+    );
+
+    if (!ok) return;
+
+    setAccounts((prev) =>
+      prev.map((acc) => ({
+        ...acc,
+        bal: "",
+        balTHB: "",
+        rate: "",
+      })),
+    );
   };
 
   const initialAccounts = [
@@ -297,6 +314,42 @@ export default function FinanceApp() {
         };
       }),
     );
+  };
+
+  const clearAndTurnOffScbGroup = (groupType) => {
+    setAccounts((prev) =>
+      prev.map((acc) => {
+        const isScb = acc.bank.startsWith("SCB");
+        if (!isScb) return acc;
+
+        const isScbCreditCard = isCC(acc.bank);
+        const shouldClear =
+          groupType === "credit" ? isScbCreditCard : !isScbCreditCard;
+
+        if (!shouldClear) return acc;
+
+        return {
+          ...acc,
+          bal: "",
+          balTHB: "",
+          isHidden: true,
+        };
+      }),
+    );
+  };
+
+  const toggleScbSavings = () => {
+    if (scbSavingsExpanded) {
+      clearAndTurnOffScbGroup("savings");
+    }
+    setScbSavingsExpanded(!scbSavingsExpanded);
+  };
+
+  const toggleScbCreditCards = () => {
+    if (scbCCExpanded) {
+      clearAndTurnOffScbGroup("credit");
+    }
+    setScbCCExpanded(!scbCCExpanded);
   };
 
   const updateAccount = (id, field, val) => {
@@ -518,15 +571,22 @@ export default function FinanceApp() {
 
         .cc-item-row {
           display: grid !important;
-          grid-template-columns: 26px minmax(0, 1fr) !important;
-          gap: 8px !important;
+          grid-template-columns: 20px minmax(0, 1fr) !important;
+          gap: 4px !important;
           align-items: start !important;
           padding-left: 0 !important;
         }
 
+        button[aria-label="Toggle Visibility"] {
+          width: 16px !important;
+          height: 16px !important;
+          min-width: 16px !important;
+          flex-basis: 16px !important;
+        }
+
         .cc-item-row > button[aria-label="Toggle Visibility"] {
           justify-self: center !important;
-          margin-top: 12px !important;
+          margin-top: 10px !important;
         }
 
         .scb-group-toggle {
@@ -582,10 +642,10 @@ export default function FinanceApp() {
 
         .cc-thb-wrap > div,
         .cc-usd-wrap {
-          height: 34px !important;
-          min-height: 34px !important;
-          padding-top: 4px !important;
-          padding-bottom: 4px !important;
+          height: 32px !important;
+          min-height: 32px !important;
+          padding-top: 3px !important;
+          padding-bottom: 3px !important;
         }
 
         .cc-dates-row {
@@ -613,7 +673,8 @@ export default function FinanceApp() {
 
         @media (max-width: 520px) {
           .cc-item-row {
-            gap: 6px !important;
+            grid-template-columns: 18px minmax(0, 1fr) !important;
+            gap: 3px !important;
             margin-bottom: 10px !important;
           }
 
@@ -671,10 +732,10 @@ export default function FinanceApp() {
           }
 
           .cc-day-input {
-            flex-basis: 30px !important;
-            width: 30px !important;
-            height: 22px !important;
-            font-size: 13px !important;
+            flex-basis: 28px !important;
+            width: 28px !important;
+            height: 21px !important;
+            font-size: 12px !important;
           }
         }
 
@@ -685,6 +746,21 @@ export default function FinanceApp() {
 
           .cc-date-group {
             justify-content: flex-start !important;
+          }
+        }
+
+
+        @media (max-width: 430px) {
+          .header-actions-stack {
+            width: 84px !important;
+            gap: 5px !important;
+          }
+          .header-actions-stack button {
+            width: 84px !important;
+            height: 26px !important;
+            font-size: 9px !important;
+            padding-left: 4px !important;
+            padding-right: 4px !important;
           }
         }
 
@@ -748,21 +824,23 @@ export default function FinanceApp() {
               justifyContent: "space-between",
               alignItems: "flex-start",
               position: "relative",
-              minHeight: "92px",
+              minHeight: "114px",
               marginBottom: "12px",
             }}
           >
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                gap: "8px",
+                flexDirection: "column",
+                alignItems: "stretch",
+                gap: "6px",
                 position: "absolute",
                 top: 0,
                 left: 0,
                 zIndex: 8,
+                width: "92px",
               }}
-              className="print-hide"
+              className="print-hide header-actions-stack"
             >
               <button
                 className="print-hide"
@@ -771,17 +849,20 @@ export default function FinanceApp() {
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "4px",
-                  background: "#00247D",
-                  border: "1.5px solid #001A5C",
+                  width: "92px",
+                  height: "27px",
+                  background: "#f1f5f9",
+                  border: "1.5px solid #94a3b8",
                   borderRadius: "8px",
                   cursor: "pointer",
                   padding: "3px 7px",
-                  color: "#ffffff",
+                  color: "#000",
                   fontSize: "10px",
                   fontWeight: "900",
                   lineHeight: 1,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.14)",
                 }}
               >
                 <svg
@@ -810,17 +891,20 @@ export default function FinanceApp() {
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "4px",
-                  background: "#A51931",
-                  border: "1.5px solid #7A1023",
+                  width: "92px",
+                  height: "27px",
+                  background: "#f1f5f9",
+                  border: "1.5px solid #94a3b8",
                   borderRadius: "8px",
                   cursor: "pointer",
                   padding: "3px 7px",
-                  color: "#ffffff",
+                  color: "#000",
                   fontSize: "10px",
                   fontWeight: "900",
                   lineHeight: 1,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.14)",
                 }}
               >
                 <svg
@@ -844,15 +928,64 @@ export default function FinanceApp() {
                 SHARE
               </button>
 
+              <button
+                className="print-hide"
+                onClick={handleClearAll}
+                title="Clear all account amounts"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "4px",
+                  width: "92px",
+                  height: "27px",
+                  background: "#f1f5f9",
+                  border: "1.5px solid #94a3b8",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  padding: "3px 7px",
+                  color: "#000",
+                  fontSize: "10px",
+                  fontWeight: "900",
+                  lineHeight: 1,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.14)",
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                  <path d="M10 11v6"></path>
+                  <path d="M14 11v6"></path>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+                </svg>
+                CLEAR
+              </button>
+
               <a
                 href="https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=THB"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
+                  position: "absolute",
+                  left: "102px",
+                  top: "3px",
+                  width: "150px",
                   fontSize: "10px",
                   fontWeight: "900",
                   color: "#0000EE",
                   textDecoration: "underline",
+                  whiteSpace: "nowrap",
                 }}
               >
                 XE.com USD to THB
@@ -863,7 +996,7 @@ export default function FinanceApp() {
               style={{
                 position: "absolute",
                 left: "50%",
-                top: "28px",
+                top: "20px",
                 transform: "translateX(-50%)",
                 textAlign: "center",
                 zIndex: 5,
@@ -1155,7 +1288,7 @@ export default function FinanceApp() {
           <div style={{ marginTop: "4px", marginBottom: "8px" }}>
             <button
               className="scb-group-toggle"
-              onClick={() => setScbSavingsExpanded(!scbSavingsExpanded)}
+              onClick={toggleScbSavings}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -1218,7 +1351,7 @@ export default function FinanceApp() {
                         display: "flex",
                         alignItems: "center",
                         gap: "10px",
-                        marginBottom: acc.isHidden ? "2px" : "8px",
+                        marginBottom: "8px",
                         paddingLeft: "0",
                       }}
                     >
@@ -1251,13 +1384,13 @@ export default function FinanceApp() {
                         <div
                           style={{
                             width: "100%",
-                            background: acc.isHidden ? "transparent" : "#fff",
+                            background: "#fff",
                             borderRadius: "8px",
-                            border: acc.isHidden ? "none" : "1.5px solid #000",
-                            color: acc.isHidden ? "#94a3b8" : "#000",
-                            fontSize: acc.isHidden ? "13px" : "14px",
+                            border: "1.5px solid #000",
+                            color: "#000",
+                            fontSize: "14px",
                             fontWeight: "normal",
-                            padding: acc.isHidden ? "2px 0" : "5px 8px",
+                            padding: "5px 8px",
                             boxSizing: "border-box",
                             display: "flex",
                             alignItems: "center",
@@ -1267,46 +1400,47 @@ export default function FinanceApp() {
                         </div>
                       </div>
 
-                      {!acc.isHidden && (
+                      <div
+                        style={{
+                          flex: 1.2,
+                          display: "flex",
+                          gap: "8px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <CommaInput
+                            value={acc.balTHB || ""}
+                            onChange={(val) =>
+                              updateAccount(acc.id, "balTHB", val)
+                            }
+                            placeholder="0.00"
+                            prefix="฿"
+                            bg="#fff"
+                            border="#000"
+                            isDebt={false}
+                          />
+                        </div>
                         <div
                           style={{
-                            flex: 1.2,
+                            flex: 1,
+                            background: "#f8fafc",
+                            borderRadius: "8px",
+                            border: "1.5px solid #000",
+                            padding: "5px 8px",
+                            fontSize: MONEY_FONT_SIZE,
+                            fontWeight: MONEY_FONT_WEIGHT,
+                            color: getBalanceColor(acc.bal, false),
+                            textAlign: "right",
                             display: "flex",
-                            gap: "8px",
+                            justifyContent: "flex-end",
                             alignItems: "center",
+                            boxSizing: "border-box",
                           }}
                         >
-                          <div style={{ flex: 1 }}>
-                            <CommaInput
-                              value={acc.balTHB || ""}
-                              onChange={(val) =>
-                                updateAccount(acc.id, "balTHB", val)
-                              }
-                              placeholder="0.00"
-                              prefix="฿"
-                              bg="#fff"
-                              border="#000"
-                              isDebt={false}
-                            />
-                          </div>
-                          <div
-                            style={{
-                              flex: 1,
-                              background: "#f8fafc",
-                              borderRadius: "8px",
-                              border: "1.5px solid #000",
-                              padding: "5px 8px",
-                              fontSize: MONEY_FONT_SIZE,
-                              fontWeight: MONEY_FONT_WEIGHT,
-                              color: getBalanceColor(acc.bal, false),
-                              textAlign: "right",
-                              boxSizing: "border-box",
-                            }}
-                          >
-                            {fmtCur(acc.bal)}
-                          </div>
+                          {fmtCur(acc.bal)}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </React.Fragment>
                 ))}
@@ -1372,9 +1506,9 @@ export default function FinanceApp() {
                       updateAccount(cc.id, "isHidden", !cc.isHidden)
                     }
                     style={{
-                      marginTop: cc.isHidden ? "0" : "12px",
-                      width: "18px",
-                      height: "18px",
+                      marginTop: "12px",
+                      width: "16px",
+                      height: "16px",
                       borderRadius: "50%",
                       padding: 0,
                       background: cc.isHidden ? "#000" : "#00247D",
@@ -1557,7 +1691,7 @@ export default function FinanceApp() {
           <div style={{ marginTop: "4px", marginBottom: "8px" }}>
             <button
               className="scb-group-toggle"
-              onClick={() => setScbCCExpanded(!scbCCExpanded)}
+              onClick={toggleScbCreditCards}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -1618,8 +1752,8 @@ export default function FinanceApp() {
                       style={{
                         display: "flex",
                         gap: "10px",
-                        alignItems: cc.isHidden ? "center" : "flex-start",
-                        marginBottom: cc.isHidden ? "2px" : "12px",
+                        alignItems: "flex-start",
+                        marginBottom: "12px",
                         paddingLeft: "0",
                       }}
                     >
@@ -1629,9 +1763,9 @@ export default function FinanceApp() {
                           updateAccount(cc.id, "isHidden", !cc.isHidden)
                         }
                         style={{
-                          marginTop: cc.isHidden ? "0" : "12px",
-                          width: "18px",
-                          height: "18px",
+                          marginTop: "12px",
+                          width: "16px",
+                          height: "16px",
                           borderRadius: "50%",
                           padding: 0,
                           background: cc.isHidden ? "#000" : "#00247D",
@@ -1643,208 +1777,193 @@ export default function FinanceApp() {
                         aria-label="Toggle Visibility"
                       />
 
-                      {cc.isHidden ? (
+                      <div
+                        className="cc-card-shell"
+                        style={{
+                          flex: 1,
+                          border: "2px solid #000",
+                          borderRadius: "12px",
+                          overflow: "hidden",
+                          background: "#fff",
+                        }}
+                      >
+                        {/* Top Row: Name, THB, and Balance */}
                         <div
+                          className="cc-top-row cc-scb-top-row"
                           style={{
-                            color: "#94a3b8",
-                            fontSize: "14px",
-                            padding: "2px 0",
+                            padding: "10px 12px 6px",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: "10px",
                           }}
                         >
-                          {cc.bank}
-                        </div>
-                      ) : (
-                        <div
-                          className="cc-card-shell"
-                          style={{
-                            flex: 1,
-                            border: "2px solid #000",
-                            borderRadius: "12px",
-                            overflow: "hidden",
-                            background: "#fff",
-                          }}
-                        >
-                          {/* Top Row: Name, THB, and Balance */}
                           <div
-                            className="cc-top-row cc-scb-top-row"
+                            className="cc-name-box"
                             style={{
-                              padding: "10px 12px 6px",
+                              flex: 1,
+                              background: "#fff",
+                              borderRadius: "8px",
+                              border: "1.5px solid #000",
+                              padding: "5px 10px",
+                              fontSize: "14px",
+                              fontWeight: "normal",
+                              color: "#000",
                               display: "flex",
-                              justifyContent: "space-between",
                               alignItems: "center",
-                              gap: "10px",
+                              justifyContent: "flex-start",
+                            }}
+                          >
+                            {cc.bank}
+                          </div>
+                          <div
+                            className="cc-amount-pair"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
                             }}
                           >
                             <div
-                              className="cc-name-box"
+                              className="cc-thb-wrap"
+                              style={{ width: "96px" }}
+                            >
+                              <CommaInput
+                                value={cc.balTHB || ""}
+                                onChange={(val) =>
+                                  updateAccount(cc.id, "balTHB", val)
+                                }
+                                placeholder="0.00"
+                                prefix="฿"
+                                bg="#fff"
+                                border="#000"
+                                isDebt={true}
+                              />
+                            </div>
+                            <div
+                              className="cc-usd-wrap"
                               style={{
-                                flex: 1,
-                                background: "#fff",
+                                width: "110px",
+                                background: "#f8fafc",
                                 borderRadius: "8px",
                                 border: "1.5px solid #000",
-                                padding: "5px 10px",
-                                fontSize: "14px",
-                                fontWeight: "normal",
-                                color: "#000",
+                                padding: "5px 8px",
                                 display: "flex",
+                                justifyContent: "flex-end",
                                 alignItems: "center",
-                                justifyContent: "flex-start",
-                              }}
-                            >
-                              {cc.bank}
-                            </div>
-                            <div
-                              className="cc-amount-pair"
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                              }}
-                            >
-                              <div
-                                className="cc-thb-wrap"
-                                style={{ width: "96px" }}
-                              >
-                                <CommaInput
-                                  value={cc.balTHB || ""}
-                                  onChange={(val) =>
-                                    updateAccount(cc.id, "balTHB", val)
-                                  }
-                                  placeholder="0.00"
-                                  prefix="฿"
-                                  bg="#fff"
-                                  border="#000"
-                                  isDebt={true}
-                                />
-                              </div>
-                              <div
-                                className="cc-usd-wrap"
-                                style={{
-                                  width: "110px",
-                                  background: "#f8fafc",
-                                  borderRadius: "8px",
-                                  border: "1.5px solid #000",
-                                  padding: "5px 8px",
-                                  display: "flex",
-                                  justifyContent: "flex-end",
-                                  alignItems: "center",
-                                  boxSizing: "border-box",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    color: CC_MONEY_COLOR,
-                                    fontSize: CC_MONEY_FONT_SIZE,
-                                    fontWeight: CC_MONEY_FONT_WEIGHT,
-                                    whiteSpace: "nowrap",
-                                  }}
-                                >
-                                  {fmtCurNeg(cc.bal)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Bottom Row: Dates */}
-                          <div
-                            className="cc-dates-row"
-                            style={{
-                              padding: "6px 12px",
-                              background: "#f8fafc",
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              borderTop: "1px solid #eee",
-                            }}
-                          >
-                            <div
-                              className="cc-date-group"
-                              style={{
-                                flex: 1,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
+                                boxSizing: "border-box",
                               }}
                             >
                               <span
-                                className="cc-date-label"
                                 style={{
-                                  fontSize: "10px",
-                                  color: "#64748b",
-                                  fontWeight: "800",
-                                  textTransform: "uppercase",
+                                  color: CC_MONEY_COLOR,
+                                  fontSize: CC_MONEY_FONT_SIZE,
+                                  fontWeight: CC_MONEY_FONT_WEIGHT,
+                                  whiteSpace: "nowrap",
                                 }}
                               >
-                                Cycle
+                                {fmtCurNeg(cc.bal)}
                               </span>
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                value={cc.cycle || ""}
-                                onChange={(e) =>
-                                  updateAccount(
-                                    cc.id,
-                                    "cycle",
-                                    cleanDayInput(e.target.value),
-                                  )
-                                }
-                                className="cc-day-input"
-                                style={DAY_INPUT_STYLE}
-                              />
-                              <DaysIndicator
-                                days={calculateDaysUntil(
-                                  cc.cycle,
-                                  referenceDate,
-                                )}
-                                type="cycle"
-                              />
-                            </div>
-                            <div
-                              className="cc-date-spacer"
-                              style={{ width: "20px" }}
-                            ></div>
-                            <div
-                              className="cc-date-group"
-                              style={{
-                                flex: 1,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                              }}
-                            >
-                              <span
-                                className="cc-date-label"
-                                style={{
-                                  fontSize: "10px",
-                                  color: "#64748b",
-                                  fontWeight: "800",
-                                  textTransform: "uppercase",
-                                }}
-                              >
-                                Due
-                              </span>
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                value={cc.due || ""}
-                                onChange={(e) =>
-                                  updateAccount(
-                                    cc.id,
-                                    "due",
-                                    cleanDayInput(e.target.value),
-                                  )
-                                }
-                                className="cc-day-input"
-                                style={DAY_INPUT_STYLE}
-                              />
-                              <DaysIndicator
-                                days={calculateDaysUntil(cc.due, referenceDate)}
-                                type="due"
-                              />
                             </div>
                           </div>
                         </div>
-                      )}
+
+                        {/* Bottom Row: Dates */}
+                        <div
+                          className="cc-dates-row"
+                          style={{
+                            padding: "6px 12px",
+                            background: "#f8fafc",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            borderTop: "1px solid #eee",
+                          }}
+                        >
+                          <div
+                            className="cc-date-group"
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <span
+                              className="cc-date-label"
+                              style={{
+                                fontSize: "10px",
+                                color: "#64748b",
+                                fontWeight: "800",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Cycle
+                            </span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={cc.cycle || ""}
+                              onChange={(e) =>
+                                updateAccount(
+                                  cc.id,
+                                  "cycle",
+                                  cleanDayInput(e.target.value),
+                                )
+                              }
+                              className="cc-day-input"
+                              style={DAY_INPUT_STYLE}
+                            />
+                            <DaysIndicator
+                              days={calculateDaysUntil(cc.cycle, referenceDate)}
+                              type="cycle"
+                            />
+                          </div>
+                          <div
+                            className="cc-date-spacer"
+                            style={{ width: "20px" }}
+                          ></div>
+                          <div
+                            className="cc-date-group"
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <span
+                              className="cc-date-label"
+                              style={{
+                                fontSize: "10px",
+                                color: "#64748b",
+                                fontWeight: "800",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Due
+                            </span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={cc.due || ""}
+                              onChange={(e) =>
+                                updateAccount(
+                                  cc.id,
+                                  "due",
+                                  cleanDayInput(e.target.value),
+                                )
+                              }
+                              className="cc-day-input"
+                              style={DAY_INPUT_STYLE}
+                            />
+                            <DaysIndicator
+                              days={calculateDaysUntil(cc.due, referenceDate)}
+                              type="due"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </React.Fragment>
                 ))}
@@ -2008,7 +2127,7 @@ const Section = ({ title, themeColor, bg, border, children }) => (
     style={{
       background: bg,
       borderRadius: "16px",
-      padding: "12px",
+      padding: "10px",
       border: `2px solid ${border}`,
       boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
     }}
@@ -2068,7 +2187,8 @@ const CommaInput = ({
   };
 
   const borderStyle = border === "none" ? "none" : `1.5px solid ${border}`;
-  const displayText = value || placeholder || "0.00";
+  const rawDisplayText = value || placeholder || "0.00";
+  const displayText = `${isNegative ? "—" : ""}${prefix}${rawDisplayText}`;
   const inputWidth = `${Math.max(displayText.length, 4)}ch`;
 
   // Shared money style for this input
@@ -2092,7 +2212,8 @@ const CommaInput = ({
         alignItems: "center",
         background: bg,
         borderRadius: "8px",
-        padding: "5px 8px",
+        height: "32px",
+        padding: "3px 7px",
         border: borderStyle,
         width: "100%",
         boxSizing: "border-box",
@@ -2100,32 +2221,26 @@ const CommaInput = ({
         cursor: "text",
       }}
     >
-      {/* All items grouped tightly on the right */}
-      <div style={{ display: "inline-flex", alignItems: "center", gap: "0" }}>
-        <span style={{ ...moneyStyle, whiteSpace: "nowrap", lineHeight: 1 }}>
-          {isNegative ? `(${prefix}` : prefix}
-        </span>
-        <input
-          ref={inputRef}
-          type="text"
-          inputMode="decimal"
-          value={value}
-          onChange={handleInput}
-          placeholder={placeholder || "0.00"}
-          style={{
-            width: inputWidth,
-            background: "transparent",
-            border: "none",
-            outline: "none",
-            textAlign: "right",
-            padding: "0",
-            margin: "0",
-            lineHeight: 1,
-            ...moneyStyle,
-          }}
-        />
-        {isNegative && <span style={{ ...moneyStyle, lineHeight: 1 }}>)</span>}
-      </div>
+      <input
+        ref={inputRef}
+        type="text"
+        inputMode="decimal"
+        value={displayText}
+        onChange={handleInput}
+        onFocus={(e) => e.currentTarget.select()}
+        aria-label="Money amount"
+        style={{
+          width: inputWidth,
+          background: "transparent",
+          border: "none",
+          outline: "none",
+          textAlign: "right",
+          padding: "0",
+          margin: "0",
+          lineHeight: 1,
+          ...moneyStyle,
+        }}
+      />
     </div>
   );
 };
